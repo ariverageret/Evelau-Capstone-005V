@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     # MODULOS CREADOS
     'apps.general',
     'apps.login',
-    'apps.db',
 ]
 
 MIDDLEWARE = [
