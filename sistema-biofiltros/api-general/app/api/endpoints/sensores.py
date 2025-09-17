@@ -1,7 +1,3 @@
-"""
-Objetivo: definir endpoints CRUD para las lecturas de sensores usando FastAPI con dependencias de base de datos y validación de esquemas.
-"""
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List

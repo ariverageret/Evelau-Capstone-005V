@@ -11,8 +11,9 @@ class Settings(BaseSettings):
     PROJECT_VERSION: str = "1.0.0"
     
     # ---------------------- CONFIGURACIÓN DE LA BASE DE DATOS ----------------------
-    DATABASE_URL: str = "mysql+pymysql://user:password@localhost/biofiltros_db"             # Ejemplo
-    
+    #DATABASE_URL: str = "mysql+pymysql://user:password@localhost/biofiltros_db"             # Ejemplo
+    DATABASE_URL: str = "mysql+pymysql://root:bio123@localhost/sistema_biofiltros"
+
     # ---------------------- CONFIGURACIÓN DE LA API ----------------------
     API_V1_STR: str = "/api/v1"
     

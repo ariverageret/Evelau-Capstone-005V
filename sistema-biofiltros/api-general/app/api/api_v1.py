@@ -5,4 +5,4 @@ from app.api.endpoints import sensores, eficiencia
 api_router = APIRouter()
 
 api_router.include_router(sensores.router, prefix="/lecturas-sensores", tags=["sensores"])
-api_router.include_router(eficiencia.router, prefix="/eficiencia", tags=["eficiencia"])
+#api_router.include_router(eficiencia.router, prefix="/eficiencia", tags=["eficiencia"])
