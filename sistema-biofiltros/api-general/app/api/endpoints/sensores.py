@@ -40,7 +40,7 @@ def crear_lectura_sensor(lectura: LecturaSensorCreate, db: Session = Depends(get
     db.refresh(db_lectura)                                      # refrescar objeto con datos de DB
     return db_lectura
 
-# ----------------------- Actualizar una lectura existente"""
+# ----------------------- Actualizar una lectura existente
 @router.put("/lecturas-sensores/{lectura_id}", response_model=LecturaSensorResponse)
 def actualizar_lectura_sensor(lectura_id: int, lectura: LecturaSensorCreate, db: Session = Depends(get_db)):
     db_lectura = db.query(LecturaSensor).filter(LecturaSensor.id == lectura_id).first()

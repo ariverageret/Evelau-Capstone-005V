@@ -5,6 +5,7 @@ permitiendo cargar valores desde variables de entorno o un archivo `.env`.
 
 from pydantic_settings import BaseSettings
 from typing import List
+import os
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Sistema de Biofiltros API"
@@ -30,6 +31,12 @@ class Settings(BaseSettings):
     THINGSPEAK_API_KEY: str = "your-thingspeak-api-key"                     # API Key para enviar datos a ThingSpeak 
     THINGSPEAK_CHANNEL_ID: str = "your-channel-id"                          # ID del canal de ThingSpeak donde se almacenan los datos
     
+    THINGSPEAK_API_KEY: str = os.getenv("THINGSPEAK_API_KEY", "your-thingspeak-api-key")
+    THINGSPEAK_CHANNEL_ID: str = os.getenv("THINGSPEAK_CHANNEL_ID", "your-channel-id")
+
+    # Scheduler Configuration
+    SCHEDULER_INTERVAL_MINUTES: int = os.getenv("SCHEDULER_INTERVAL_MINUTES", 15)
+
     # ---------------------- CONFIGURACIÓN DE ENVIRONMENTS ----------------------
     class Config:
         env_file = ".env"

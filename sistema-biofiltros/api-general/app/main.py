@@ -1,13 +1,34 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.api.api_v1 import api_router
-from app.utils.logging import configure_logging
+from app.utils.logging import configure_logging 
 from datetime import datetime
 import pytz
 
+# Importar logger de loguru directamente
+from loguru import logger
+
+# Importar los componentes necesarios para el lifespan
+from app.services.scheduler import scheduler
+from app.core.database import Base, engine
+
 # Configurar logging
 configure_logging()
+
+"""@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Iniciar scheduler cuando la app comienza
+    Base.metadata.create_all(bind=engine)  # Crear tablas si no existen
+    scheduler.iniciar()
+    logger.info("Aplicación y scheduler iniciados")
+    
+    yield
+    
+    # Shutdown: Detener scheduler cuando la app termina
+    scheduler.detener()
+    logger.info("Aplicación y scheduler detenidos")"""
 
 # Endpoints básicos
 app = FastAPI(
@@ -16,6 +37,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc"
+    #lifespan=lifespan 
 )
 
 # Incluir routers
