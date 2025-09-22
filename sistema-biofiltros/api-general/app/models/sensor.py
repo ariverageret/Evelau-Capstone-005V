@@ -12,7 +12,7 @@ class LecturaSensor(Base):
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     timestamp = Column(DateTime, index=True, nullable=False)
-    punto_muestreo = Column(Enum('entrada', 'salida_1', 'salida_2', 'salida_final'), index=True, nullable=False)
+    punto_muestreo = Column(Enum('entrada', 'salida_biofiltro'), index=True, nullable=False)
     biofiltro_id = Column(Integer, ForeignKey('biofiltros.id'), nullable=True)
     od = Column(Numeric(4, 2), nullable=True)
     ph = Column(Numeric(3, 1), nullable=True)
