@@ -1,0 +1,43 @@
+
+# Entorno virtual
+venv/
+__pycache__/
+*.pyc
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs y temporales
+*.log
+*.tmp
+
+# Configuraciones de IDE
+.vscode/
+.idea/
+=======
+# Ignorar entorno virtual
+venv/
+
+# Ignorar cachés de Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Ignorar archivos de logs y bases de datos temporales
+*.log
+*.sqlite3
+*.db
+
+# Ignorar configuraciones de IDEs
+.vscode/
+.idea/
+
+# Ignorar archivos de pruebas
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Ignorar archivos del sistema
+.DS_Store
+Thumbs.db
