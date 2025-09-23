@@ -29,7 +29,7 @@ __pycache__/
 *.sqlite3
 *.db
 
-# Ignorar configuraciones de IDEs
+# Ignorar configuraciones de IDE
 .vscode/
 .idea/
 
