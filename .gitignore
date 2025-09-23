@@ -22,6 +22,7 @@ venv/
 # Ignorar cachés de Python
 __pycache__/
 *.py[cod]
+*.pyc
 *.so
 
 # Ignorar archivos de logs y bases de datos temporales
