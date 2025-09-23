@@ -22,7 +22,6 @@ venv/
 # Ignorar cachés de Python
 __pycache__/
 *.py[cod]
-*.pyc
 *.so
 
 # Ignorar archivos de logs y bases de datos temporales
@@ -30,7 +29,7 @@ __pycache__/
 *.sqlite3
 *.db
 
-# Ignorar configuraciones de IDE
+# Ignorar configuraciones de IDEs
 .vscode/
 .idea/
 
@@ -42,3 +41,4 @@ htmlcov/
 # Ignorar archivos del sistema
 .DS_Store
 Thumbs.db
+

@@ -34,5 +34,5 @@ Este es un proyecto de Python que utiliza un entorno virtual para gestionar las 
 Una vez que el entorno virtual esté activado y las dependencias instaladas, puedes ejecutar tu proyecto de la siguiente manera:
 
 ```bash
-python main.py
+python manage.py
 ```
