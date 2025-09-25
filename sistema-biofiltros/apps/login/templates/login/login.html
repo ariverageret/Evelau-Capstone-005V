@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+{% include "head.html" %}
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Fondo difuminado general -->
+  <div class="absolute inset-0">
+    <img src="{% static 'login/fondo.jpg' %}" alt="Fondo" 
+         class="w-full h-full object-cover filter blur-sm brightness-75">
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="relative z-10 flex flex-col min-h-screen md:flex-row">
+
+    <!-- Izquierda: bienvenida / objetivo -->
+    <div class="hidden md:flex md:w-1/2 flex-col justify-center items-start p-12 text-white">
+      <h1 class="text-4xl font-bold mb-4">Bienvenido a BioFarms</h1>
+      <p class="text-lg mb-6">Monitoreo de biofiltros de aguas grises: controla la calidad, el flujo y la eficiencia de tus plantas de tratamiento de manera sencilla y eficiente.</p>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>Visualización en tiempo real de sensores.</li>
+        <li>Alertas automáticas de mantenimiento.</li>
+        <li>Informes históricos de eficiencia.</li>
+      </ul>
+    </div>
+
+    <!-- Derecha: login -->
+    <main class="flex-grow flex items-center justify-center md:w-1/2 p-8">
+      <div class="bg-white bg-opacity-80 backdrop-blur-md p-8 rounded shadow-md w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Iniciar Sesión</h2>
+
+        <form method="POST" action="{% url 'login' %}" class="space-y-4">
+          {% csrf_token %}
+
+          <div>
+            <label for="username" class="block text-gray-600 mb-1">Usuario</label>
+            <input type="text" name="username" id="username" placeholder="Ingresa tu usuario"
+                   class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label for="password" class="block text-gray-600 mb-1">Contraseña</label>
+            <input type="password" name="password" id="password" placeholder="Ingresa tu contraseña"
+                   class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <button type="submit"
+                  class="w-full bg-teal-700 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded">
+            Ingresar
+          </button>
+        </form>
+
+        <p class="mt-4 text-center text-gray-500 text-sm">
+             ¿Olvidaste tu contraseña? <a href="{% url 'password_reset' %}" class="text-teal-700 hover:underline">Recuperar</a>
+       </p>
+
+      </div>
+    </main>
+  </div>
+    <!-- Footer -->
+  {% include "footer.html" %}
+</body>
+</html>
