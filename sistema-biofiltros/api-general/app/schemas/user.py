@@ -14,7 +14,18 @@ class UsuarioBase(BaseModel):
     email: EmailStr
 
 class UsuarioCreate(UsuarioBase):
-    password: str 
+    username: str
+    password_hash: str
+    email: EmailStr
+    estado: EstadoUsuario = EstadoUsuario.Activo
+
+
+class UsuarioUpdate(BaseModel):
+    id_usuario: int
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password_hash: Optional[str] = None
+    estado: Optional[EstadoUsuario] = None
 
 class UsuarioResponse(UsuarioBase):
     id_usuario: int
