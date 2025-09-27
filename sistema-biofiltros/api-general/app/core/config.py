@@ -34,8 +34,15 @@ class Settings(BaseSettings):
     THINGSPEAK_API_KEY: str = os.getenv("THINGSPEAK_API_KEY", "your-thingspeak-api-key")
     THINGSPEAK_CHANNEL_ID: str = os.getenv("THINGSPEAK_CHANNEL_ID", "your-channel-id")
 
-    # Scheduler Configuration
-    SCHEDULER_INTERVAL_MINUTES: int = os.getenv("SCHEDULER_INTERVAL_MINUTES", 15)
+    # ---------------------- CONFIGURACIÓN DE SCHEDULER ----------------------
+    SCHEDULER_INTERVAL_MINUTES: int = int(os.getenv("SCHEDULER_INTERVAL_MINUTES", 15))
+
+    # ---------------------- UMBRALES NORMATIVOS (NCh 1333) ----------------------
+    NORMA_PH_MIN: float = 6.5
+    NORMA_PH_MAX: float = 8.5
+    NORMA_CONDUCTIVIDAD_MAX: int = 2000  # µS/cm
+    NORMA_TURBIDEZ_MAX: int = 5         # NTU
+    NORMA_OD_MIN: int = 2               # mg/L
 
     # ---------------------- CONFIGURACIÓN DE ENVIRONMENTS ----------------------
     class Config:

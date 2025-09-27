@@ -3,42 +3,46 @@ from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.api.api_v1 import api_router
-from app.utils.logging import configure_logging 
+from app.utils.logging import configure_logging
 from datetime import datetime
 import pytz
 
-# Importar logger de loguru directamente
 from loguru import logger
+from app.services.scheduler import start_scheduler, scheduler
 
-# Importar los componentes necesarios para el lifespan
-from app.services.scheduler import scheduler
-from app.core.database import Base, engine
+#from app.core.database import Base, engine
 
 # Configurar logging
 configure_logging()
 
-"""@asynccontextmanager
+@asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Iniciar scheduler cuando la app comienza
-    Base.metadata.create_all(bind=engine)  # Crear tablas si no existen
-    scheduler.iniciar()
-    logger.info("Aplicación y scheduler iniciados")
+    # Código que se ejecuta al iniciar la aplicación
+    logger.info("Iniciando aplicación...")
+    start_scheduler()
     
     yield
     
-    # Shutdown: Detener scheduler cuando la app termina
-    scheduler.detener()
-    logger.info("Aplicación y scheduler detenidos")"""
+    # Código que se ejecuta al apagar la aplicación
+    logger.info("Deteniendo aplicación...")
+    if scheduler.running:
+        scheduler.shutdown()
+    logger.info("Scheduler detenido.")
 
-# Endpoints básicos
+# Crear aplicación FastAPI
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
-    redoc_url="/redoc"
-    #lifespan=lifespan 
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
+
+@app.on_event("startup")
+def startup_event():
+    # Inicia el scheduler cuando la aplicación FastAPI arranca
+    start_scheduler()
 
 # Incluir routers
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -77,6 +81,6 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",                      # Escucha en todas las interfaces de red
-        port=8000,                          # Puerto donde se expone la API
+        port=8001,                          # Puerto donde se expone la API
         log_level="debug"     
     )
