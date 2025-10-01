@@ -1,10 +1,8 @@
-# C:\Users\mauro\Desktop\capstone\Evelau-Capstone-005V\sistema-biofiltros\api-general\app\services\calculation_service.py
-
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 from decimal import Decimal
-from loguru import logger # Usaremos loguru para logs más claros
+from loguru import logger 
 
 # Importar la configuración centralizada
 from app.core.config import settings
@@ -36,61 +34,58 @@ def verificar_cumplimiento_norma(lectura_salida: Dict) -> bool:
 
 def procesar_y_almacenar_eficiencia(db: Session):
     """
-    Servicio principal que orquesta el proceso de cálculo con datos reales de la BD.
+    Servicio principal que orquesta el proceso de cálculo con datos reales de la BD
+    y marca los registros como procesados para evitar duplicados.
     """
     logger.info("Iniciando job de cálculo de eficiencia...")
 
-    # 1. OBTENER DATOS DE LA BASE DE DATOS
-    # Lógica: Buscar la última lectura de 'entrada'. Luego, buscar las lecturas de 'salida'
-    # de cada biofiltro en una ventana de tiempo posterior (ej. los siguientes 30 min).
+    # 1. OBTENER DATOS NO PROCESADOS DE LA BASE DE DATOS
     
+    # 1: Añadir filtro para buscar solo registros no procesados]
     lectura_entrada = db.query(LecturaSensor).filter(
-        LecturaSensor.punto_muestreo == 'entrada'
+        LecturaSensor.punto_muestreo == 'entrada',
+        LecturaSensor.computed_eficiencia == False  # Solo buscar lecturas no procesadas
     ).order_by(LecturaSensor.timestamp.desc()).first()
 
     if not lectura_entrada:
-        logger.warning("No se encontraron lecturas de 'entrada' en la base de datos. Abortando cálculo.")
+        # Esto ahora es un comportamiento esperado si no hay datos nuevos.
+        logger.info("No se encontraron nuevas lecturas de 'entrada' para procesar.")
         return
 
-    # Definir ventana de tiempo para buscar las lecturas de salida
     ventana_inicio = lectura_entrada.timestamp
     ventana_fin = ventana_inicio + timedelta(minutes=30)
 
-    # Buscar las últimas lecturas de salida para cada biofiltro dentro de esa ventana
     lecturas_salida_obj = db.query(LecturaSensor).filter(
         LecturaSensor.punto_muestreo == 'salida_biofiltro',
+        LecturaSensor.computed_eficiencia == False, # También buscar salidas no procesadas
         LecturaSensor.timestamp.between(ventana_inicio, ventana_fin)
     ).order_by(LecturaSensor.biofiltro_id, LecturaSensor.timestamp.desc()).all()
 
-    # Agrupar para obtener solo la última lectura por biofiltro_id
     lecturas_salida_map = {ls.biofiltro_id: ls for ls in reversed(lecturas_salida_obj)}
 
     if len(lecturas_salida_map) < 3:
         logger.warning(
-            f"Datos insuficientes. Se encontraron lecturas de salida para "
-            f"{len(lecturas_salida_map)} de 3 biofiltros en la ventana de tiempo. Abortando."
+            f"Datos insuficientes para la entrada de las {lectura_entrada.timestamp}. "
+            f"Se encontraron salidas para {len(lecturas_salida_map)} de 3 biofiltros. Se reintentará en la próxima ejecución."
         )
         return
     
-    logger.info(f"Lectura de entrada encontrada con timestamp: {lectura_entrada.timestamp}")
+    logger.info(f"Procesando lectura de entrada con timestamp: {lectura_entrada.timestamp}")
     logger.info(f"Lecturas de salida encontradas para biofiltros: {list(lecturas_salida_map.keys())}")
 
-    # 2. CALCULAR EFICIENCIAS
+    # 2. CALCULAR EFICIENCIAS 
     bf1 = lecturas_salida_map.get(1)
     bf2 = lecturas_salida_map.get(2)
     bf3 = lecturas_salida_map.get(3)
-
     eficiencia_turbidez_bf1 = calcular_eficiencia(lectura_entrada.turbidez, bf1.turbidez)
     eficiencia_turbidez_bf2 = calcular_eficiencia(lectura_entrada.turbidez, bf2.turbidez)
     eficiencia_turbidez_bf3 = calcular_eficiencia(lectura_entrada.turbidez, bf3.turbidez)
-    
     od_salida_promedio = (bf1.od + bf2.od + bf3.od) / 3
     eficiencia_od_global = round(od_salida_promedio - lectura_entrada.od, 2) if lectura_entrada.od is not None else None
-
     turbidez_salida_promedio = (bf1.turbidez + bf2.turbidez + bf3.turbidez) / 3
     eficiencia_turbidez_global = calcular_eficiencia(lectura_entrada.turbidez, turbidez_salida_promedio)
 
-    # 3. VERIFICAR CUMPLIMIENTO
+    # 3. VERIFICAR CUMPLIMIENTO 
     salida_promedio_sistema = {
         "od": od_salida_promedio,
         "ph": (bf1.ph + bf2.ph + bf3.ph) / 3,
@@ -99,7 +94,8 @@ def procesar_y_almacenar_eficiencia(db: Session):
     }
     cumple_norma = verificar_cumplimiento_norma(salida_promedio_sistema)
     
-    # 4. PREPARAR Y GUARDAR DATOS
+    # 4. PREPARAR Y GUARDAR DATOS 
+    logger.info("Preparando datos de eficiencia para guardar en la BD...")
     datos_eficiencia = EficienciaCreate(
         timestamp=datetime.now(),
         eficiencia_od_global=Decimal(str(eficiencia_od_global)) if eficiencia_od_global is not None else None,
@@ -112,6 +108,12 @@ def procesar_y_almacenar_eficiencia(db: Session):
     
     db_eficiencia = EficienciaInstantanea(**datos_eficiencia.dict())
     db.add(db_eficiencia)
+    logger.info("Marcando lecturas de sensores como procesadas...")
+    lectura_entrada.computed_eficiencia = True
+    for biofiltro_id in lecturas_salida_map:
+        lecturas_salida_map[biofiltro_id].computed_eficiencia = True
+    
+    # Guardar tanto el nuevo registro de eficiencia como las actualizaciones de las lecturas
     db.commit()
     
-    logger.success(f"Cálculo de eficiencia completado y guardado en la BD. Cumple Norma: {cumple_norma}")
+    logger.success(f"Cálculo de eficiencia completado y guardado. Lecturas marcadas como procesadas.")

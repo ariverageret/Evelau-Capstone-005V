@@ -2,11 +2,23 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
 from app.core.database import SessionLocal
 from app.core.config import settings
+from app.services.simulation_service import generar_lecturas_simuladas 
 
 # Importar la función que realiza el trabajo
 from app.services.calculation_service import procesar_y_almacenar_eficiencia
 
 scheduler = BackgroundScheduler(daemon=True)
+
+def job_simular_lecturas():
+    """Función de trabajo que llama al servicio de simulación."""
+    logger.debug("Scheduler: Creando sesión de BD para el job de simulación.")
+    db = SessionLocal()
+    try:
+        generar_lecturas_simuladas(db)
+    finally:
+        db.close()
+        logger.debug("Scheduler: Sesión de BD de simulación cerrada.")
+
 
 def job_calcular_eficiencia():
     """Función de trabajo que obtiene una sesión de BD y llama al servicio de cálculo."""
@@ -22,57 +34,17 @@ def job_calcular_eficiencia():
 
 def start_scheduler():
     """
-    Inicia el scheduler y añade el trabajo de cálculo usando el intervalo de la configuración.
+    Inicia el scheduler y añade todos los trabajos.
     """
+    # Job de simulación: se ejecuta en el minuto 0 de cada hora
+    scheduler.add_job(job_simular_lecturas, 'cron', hour='*', minute='0')
+    
+    # Job de cálculo: se ejecuta 15 minutos después
     intervalo = settings.SCHEDULER_INTERVAL_MINUTES
     scheduler.add_job(job_calcular_eficiencia, 'cron', minute=f'*/{intervalo}')
     
     try:
         scheduler.start()
-        logger.info(f"Scheduler iniciado. El cálculo de eficiencia se ejecutará cada {intervalo} minutos.")
+        logger.info(f"Scheduler iniciado. Simulación a los :00. Cálculo cada {intervalo} min.")
     except Exception as e:
         logger.error(f"No se pudo iniciar el scheduler: {e}")
-
-"""class SchedulerService:
-    def __init__(self, interval_minutes: int = 15):
-        self.interval = interval_minutes * 60  # Convertir a segundos
-        self.is_running = False
-        self.thread = None
-
-    def tarea_sincronizacion(self):
-        #Tarea que se ejecuta periódicamente para sincronizar datos
-        while self.is_running:
-            try:
-                db = SessionLocal()
-                try:
-                    logger.info("Iniciando sincronización con ThingSpeak...")
-                    registros = thingSpeak_service.sincronizar_datos(db)
-                    logger.info(f"Sincronización completada. {registros} nuevos registros")
-                finally:
-                    db.close()
-                
-                # Esperar hasta la próxima ejecución
-                time.sleep(self.interval)
-                
-            except Exception as e:
-                logger.error(f"Error en tarea de sincronización: {e}")
-                time.sleep(60)  # Esperar 1 minuto antes de reintentar
-
-    def iniciar(self):
-        #Inicia el scheduler en un hilo separado
-        if not self.is_running:
-            self.is_running = True
-            self.thread = threading.Thread(target=self.tarea_sincronizacion)
-            self.thread.daemon = True  # Se cierra cuando la app principal se cierra
-            self.thread.start()
-            logger.info(f"Scheduler iniciado. Intervalo: {self.interval/60} minutos")
-
-    def detener(self):
-        #Detiene el scheduler
-        self.is_running = False
-        if self.thread:
-            self.thread.join()
-        logger.info("Scheduler detenido")
-
-# Instancia global del scheduler
-scheduler = SchedulerService(interval_minutes=15)"""

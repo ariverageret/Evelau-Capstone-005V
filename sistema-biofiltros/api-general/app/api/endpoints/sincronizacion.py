@@ -29,5 +29,5 @@ def obtener_estado_sincronizacion():
     return {
         "scheduler_activo": scheduler.is_running,
         "intervalo_minutos": scheduler.interval / 60,
-        "ultima_sincronizacion": "2024-01-01T00:00:00Z"  # Se Puede agregar tracking
+        "ultima_sincronizacion": "2024-01-01T00:00:00Z"  
     }
