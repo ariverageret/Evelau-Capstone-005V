@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Usuarios - SensorFarm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex bg-cover bg-center" 
+      style="background-image: url('{% static "login/fondo.jpg" %}');">
+
+  <!-- Sidebar -->
+ <aside class="w-64 bg-teal-900/70 backdrop-blur-lg text-white flex flex-col items-start p-6 space-y-4 relative rounded-r-lg shadow-lg">
+
+    <img src="{% static 'login/logo.png' %}" class="w-32 mb-6" alt="Logo">
+    <h1 class="text-xl font-bold mb-6">BioFarms Admin</h1>
+    <a href="#" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Inicio</a>
+    <a href="#" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Usuarios</a>
+    <a href="#" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Cerrar sesión</a>
+  </aside>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 p-10 bg-white/40 backdrop-blur-md rounded-l-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lista de usuarios</h2>
+
+    <!-- Búsqueda -->
+    <div class="flex items-center mb-4 space-x-2">
+      <input type="text" id="search" placeholder="Ingresar correo" class="border px-4 py-2 rounded flex-1">
+      <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" id="btn-buscar">Buscar</button>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
+    <thead class="bg-teal-800 text-white">
+        <tr>
+          <th class="px-4 py-2 text-left">Nombre</th>
+          <th class="px-4 py-2 text-left">Correo</th>
+          <th class="px-4 py-2 text-left">Password</th>
+          <th class="px-4 py-2 text-left">Rol</th>
+          <th class="px-4 py-2 text-center">Acción</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-200" id="user-table">
+        <tr data-rol="operador">
+          <td class="px-4 py-2">Ana García</td>
+          <td class="px-4 py-2">anagarcia@hotmail.com</td>
+          <td class="px-4 py-2">*****</td>
+          <td class="px-4 py-2">Operador</td>
+          <td class="px-4 py-2 text-center space-x-2">
+            <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver">Ver</button>
+            <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Modificar</button>
+            <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar">Eliminar</button>
+          </td>
+        </tr>
+        <tr data-rol="supervisor">
+          <td class="px-4 py-2">Andrea Castro</td>
+          <td class="px-4 py-2">andreacastro@gmail.com</td>
+          <td class="px-4 py-2">*****</td>
+          <td class="px-4 py-2">Supervisor</td>
+          <td class="px-4 py-2 text-center space-x-2">
+            <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver">Ver</button>
+            <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Modificar</button>
+            <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar">Eliminar</button>
+          </td>
+        </tr>
+        <!-- Más filas aquí -->
+      </tbody>
+    </table>
+
+   <!-- Formulario de agregar -->
+<div class="flex justify-center mt-8">
+  <div class="p-6 bg-white shadow rounded-lg space-y-4 w-full max-w-md">
+    <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">Agregar Usuario</h3>
+    <form class="space-y-4" id="user-form">
+      <div>
+        <label class="block text-gray-700 mb-1">Nombre</label>
+        <input type="text" id="nombre" class="w-full border px-3 py-2 rounded" placeholder="Nombre del usuario">
+      </div>
+      <div>
+        <label class="block text-gray-700 mb-1">Correo</label>
+        <input type="email" id="correo" class="w-full border px-3 py-2 rounded" placeholder="Correo electrónico">
+      </div>
+      <div>
+        <label class="block text-gray-700 mb-1">Contraseña</label>
+        <input type="password" id="password" class="w-full border px-3 py-2 rounded" placeholder="Contraseña">
+      </div>
+      <div>
+        <label class="block text-gray-700 mb-1">Rol</label>
+        <select id="rol" class="w-full border px-3 py-2 rounded">
+          <option value="">Selecciona un rol</option>
+          <option value="administrador">Administrador</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="operador">Operador</option>
+        </select>
+      </div>
+      <div class="flex space-x-2">
+        <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
+        <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+  <script>
+    // Funcionalidad de modificar usuario
+    const buttons = document.querySelectorAll('.btn-modificar');
+    const formTitle = document.getElementById('form-title');
+    const nombreInput = document.getElementById('nombre');
+    const correoInput = document.getElementById('correo');
+    const passwordInput = document.getElementById('password');
+    const rolSelect = document.getElementById('rol');
+    const btnCancelar = document.getElementById('btn-cancelar');
+    let editingRow = null;
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('tr');
+        editingRow = row;
+        nombreInput.value = row.children[0].innerText;
+        correoInput.value = row.children[1].innerText;
+        passwordInput.value = ""; // No mostrar la contraseña real
+        rolSelect.value = row.dataset.rol;
+        formTitle.innerText = 'Modificar Usuario';
+      });
+    });
+
+    btnCancelar.addEventListener('click', () => {
+      editingRow = null;
+      formTitle.innerText = 'Agregar Usuario';
+      nombreInput.value = '';
+      correoInput.value = '';
+      passwordInput.value = '';
+      rolSelect.value = '';
+    });
+
+    // Guardar cambios (simulación)
+    document.getElementById('user-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (editingRow) {
+        editingRow.children[0].innerText = nombreInput.value;
+        editingRow.children[1].innerText = correoInput.value;
+        editingRow.children[2].innerText = passwordInput.value ? '*****' : editingRow.children[2].innerText;
+        editingRow.children[3].innerText = rolSelect.value.charAt(0).toUpperCase() + rolSelect.value.slice(1);
+        editingRow.dataset.rol = rolSelect.value;
+        editingRow = null;
+        formTitle.innerText = 'Agregar Usuario';
+      } else {
+        // Aquí iría la lógica para agregar un nuevo usuario
+        alert('Usuario agregado: ' + nombreInput.value);
+      }
+      // Limpiar formulario
+      nombreInput.value = '';
+      correoInput.value = '';
+      passwordInput.value = '';
+      rolSelect.value = '';
+    });
+  </script>
+
+</body>
+</html>
