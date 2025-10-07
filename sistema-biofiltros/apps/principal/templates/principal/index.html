@@ -1,11 +1,17 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-{% include "head.html" %}
+<head>
+    {% include "head.html" %}
+</head>
 <body>
-    <h1>Bienvenido, {{ user.username }}!</h1>
-    <p>Esta es la página principal después de hacer login.</p>
+    {% include "header.html" %}
+
+    <main>
+        <h1>Bienvenido, {{ user.username }}!</h1>
+        <p>Esta es la página principal después de hacer login.</p>
+    </main>
+
+    {% include "footer.html" %}
 </body>
 </html>
-    <!-- Footer -->
-  {% include "footer.html" %}

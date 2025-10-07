@@ -21,3 +21,4 @@ class Usuario(Base):
     email = Column(String(100), unique=True, nullable=False)
     estado = Column(Enum(EstadoUsuario), default=EstadoUsuario.Activo, nullable=False)
     fecha_creacion = Column(TIMESTAMP, server_default=func.now())
+    rol = Column(String(50), nullable=False, default="User")  # Nuevo campo para el rol del usuario

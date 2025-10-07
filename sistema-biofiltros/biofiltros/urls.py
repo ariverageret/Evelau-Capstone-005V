@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(pattern_name='login', permanent=False)),  # redirige "/" a "/login/"
     path('', include('apps.login.urls')),
-    path('principal/', include('apps.principal.urls')), 
+    path('principal/', include('apps.principal.urls')),
+    path('usuarios/', include('apps.usuarios.urls')),
 ]

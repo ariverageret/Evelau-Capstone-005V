@@ -17,6 +17,7 @@ class UsuarioCreate(UsuarioBase):
     username: str
     password_hash: str
     email: EmailStr
+    rol: str
     estado: EstadoUsuario = EstadoUsuario.Activo
 
 
@@ -26,11 +27,13 @@ class UsuarioUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password_hash: Optional[str] = None
     estado: Optional[EstadoUsuario] = None
+    rol: Optional[str] = None
 
 class UsuarioResponse(UsuarioBase):
     id_usuario: int
     estado: EstadoUsuario
     fecha_creacion: datetime
+    rol : str
 
     class Config:
         from_attributes = True

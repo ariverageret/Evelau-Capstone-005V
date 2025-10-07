@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Usuarios - SensorFarm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="min-h-screen flex bg-cover bg-center" 
+      style="background-image: url('{% static "login/fondo.jpg" %}');">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-teal-900/70 backdrop-blur-lg text-white flex flex-col items-start p-6 space-y-4 relative rounded-r-lg shadow-lg">
+    <img src="{% static 'login/logo.png' %}" class="w-32 mb-6" alt="Logo">
+    <h1 class="text-xl font-bold mb-6">BioFarms Admin</h1>
+    <a href="{% url 'principal_home' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Inicio</a>
+    <a href="{% url 'mantenedor_roles' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Roles</a>
+    <a href="{% url 'mantenedor_usuarios' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Usuarios</a>
+    <a class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Cerrar sesión</a>
+  </aside>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 p-10 bg-white/40 backdrop-blur-md rounded-l-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lista de usuarios</h2>
+
+    <!-- Búsqueda -->
+    <div class="flex items-center mb-4 space-x-2">
+      <input type="text" id="search" placeholder="Ingresar correo" class="border px-4 py-2 rounded flex-1">
+      <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" id="btn-buscar">Buscar</button>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
+      <thead class="bg-teal-800 text-white">
+        <tr>
+          <th class="px-4 py-2 text-left">Nombre</th>
+          <th class="px-4 py-2 text-left">Correo</th>
+          <th class="px-4 py-2 text-left">Password</th>
+          <th class="px-4 py-2 text-left">Rol</th>
+          <th class="px-4 py-2 text-left">Estado</th>
+          <th class="px-4 py-2 text-center">Acción</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-200" id="user-table">
+        {% for user in users %}
+        <tr data-id="{{ user.id_usuario }}" data-rol="{{ user.rol|lower }}">
+          <td class="px-4 py-2">{{ user.username }}</td>
+          <td class="px-4 py-2">{{ user.email }}</td>
+          <td class="px-4 py-2">*****</td>
+          <td class="px-4 py-2">{{ user.rol }}</td>
+          <td class="px-4 py-2">{{ user.estado }}</td>
+          <td class="px-4 py-2 text-center space-x-2">
+            <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver">Ver</button>
+            <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Modificar</button>
+            <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar">Eliminar</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-4 py-2 text-center">No hay usuarios</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Formulario de agregar/editar -->
+    <div class="flex justify-center mt-8">
+      <div class="p-6 bg-white shadow rounded-lg space-y-4 w-full max-w-md">
+        <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">Agregar Usuario</h3>
+
+        <form class="space-y-4" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="create_user" value="1">
+
+          <div>
+            <label class="block text-gray-700 mb-1">Nombre</label>
+            <input type="text" name="username" class="w-full border px-3 py-2 rounded" placeholder="Nombre del usuario" required>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 mb-1">Correo</label>
+            <input type="email" name="email" class="w-full border px-3 py-2 rounded" placeholder="Correo electrónico" required>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 mb-1">Contraseña</label>
+            <input type="password" name="password" class="w-full border px-3 py-2 rounded" placeholder="Contraseña" required>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 mb-1">Rol</label>
+            <select name="rol" class="w-full border px-3 py-2 rounded" required>
+              <option value="">Selecciona un rol</option>
+              {% for rol in roles %}
+                <option value="{{ rol.nombre_rol }}">{{ rol.nombre_rol|capfirst }}</option>
+              {% empty %}
+                <option disabled>No hay roles disponibles</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="flex space-x-2">
+            <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
+            <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- SweetAlert para mensajes de Django -->
+  <script>
+    {% if messages %}
+      {% for message in messages %}
+        Swal.fire({
+          icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+          title: "{{ message }}",
+          timer: 2500,
+          showConfirmButton: false
+        });
+      {% endfor %}
+    {% endif %}
+  </script>
+
+  <!-- JS para modificar/eliminar usuarios -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const buttonsModificar = document.querySelectorAll(".btn-modificar");
+      const buttonsEliminar = document.querySelectorAll(".btn-eliminar");
+      const form = document.querySelector("form");
+      const title = document.getElementById("form-title");
+      const inputHidden = form.querySelector("input[name='create_user']");
+      const inputUserId = document.createElement("input");
+      inputUserId.type = "hidden";
+      inputUserId.name = "user_id";
+
+      // 🔹 Modo editar usuario
+      buttonsModificar.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const row = btn.closest("tr");
+          const nombre = row.children[0].textContent.trim();
+          const correo = row.children[1].textContent.trim();
+          const rol = row.children[3].textContent.trim();
+
+          inputUserId.value = row.dataset.id || "";
+
+          title.textContent = "Editar Usuario";
+          inputHidden.name = "edit_user";
+          form.appendChild(inputUserId);
+
+          form.username.value = nombre;
+          form.email.value = correo;
+          form.password.value = "";
+          form.password.required = false;
+          form.rol.value = rol;
+
+          form.scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      // 🔹 Cancelar edición
+      document.getElementById("btn-cancelar").addEventListener("click", function () {
+        title.textContent = "Agregar Usuario";
+        inputHidden.name = "create_user";
+        form.reset();
+        if (inputUserId.parentNode) inputUserId.remove();
+        form.password.required = true;
+      });
+
+      // 🔹 Eliminar usuario con SweetAlert
+      buttonsEliminar.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const row = btn.closest("tr");
+          const nombre = row.children[0].textContent.trim();
+          const id = row.dataset.id;
+
+          Swal.fire({
+            title: `Eliminar usuario "${nombre}"?`,
+            text: "Esta acción no se puede deshacer",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const formDelete = document.createElement("form");
+              formDelete.method = "POST";
+              formDelete.innerHTML = `
+                <input type="hidden" name="csrfmiddlewaretoken" value="${form.querySelector('[name=csrfmiddlewaretoken]').value}">
+                <input type="hidden" name="delete_user" value="1">
+                <input type="hidden" name="user_id" value="${id}">
+              `;
+              document.body.appendChild(formDelete);
+              formDelete.submit();
+            }
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

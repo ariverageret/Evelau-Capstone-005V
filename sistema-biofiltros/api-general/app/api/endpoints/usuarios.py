@@ -57,6 +57,8 @@ def modificar_usuario(usuario: UsuarioUpdate, db: Session = Depends(get_db)):
         existing_user.password_hash = hash_password(usuario.password_hash)
     if usuario.estado:
         existing_user.estado = usuario.estado
+    if usuario.rol:
+        existing_user.rol = usuario.rol
 
     db.commit()
     db.refresh(existing_user)
