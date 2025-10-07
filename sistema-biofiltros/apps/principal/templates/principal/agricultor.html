@@ -1,158 +1,173 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BioFarm - Sistema de Monitoreo de Calidad del Agua</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans p-6">
+  {% include 'head.html' %}
 
-<div class="max-w-7xl mx-auto">
+  <body class="bg-gray-50 min-h-screen font-sans flex flex-col">
 
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-    <div class="flex items-center gap-3">
-      <img src="{% static 'principal/logo.png' %}" alt="Logo BioFarm" class="h-16 w-16 object-contain">
+    {% include 'header.html' %}
 
+    <div class="flex flex-1">
 
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">BioFarm</h1>
-            <p class="text-gray-500 text-sm">Sistema de Monitoreo de Calidad del Agua</p>
-        </div>
-    </div>
-    <div class="flex items-center gap-1 text-gray-700 font-semibold">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.879 6.196a9 9 0 01-13.758 11.608z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <span>Vista del Agricultor</span>
-    </div>
-</div>
+      {% include 'sidebar.html' %}
 
-    <!-- Estado Agua -->
-    <div class="bg-green-500 text-white rounded-lg p-6 mb-6 flex justify-between items-center">
-        <div>
-            <h2 class="text-3xl font-bold">{{ estado_agua }}</h2>
-            <p class="text-sm">{{ mensaje_estado }}</p>
-        </div>
-        <div class="text-4xl">✔️</div>
-    </div>
+      <main class="flex-1 p-6 overflow-y-auto">
+        <div class="max-w-6xl mx-auto">
 
-    <!-- Tarjetas de medición -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-3">
-            <!-- Icono de oxígeno -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <!-- Encabezado con indicador de vista -->
+          <div class="flex justify-between items-center mb-6">
             <div>
-                <p class="text-gray-500 text-sm">Nivel de Oxígeno</p>
-                <p class="text-2xl font-bold text-green-600">{{ nivel_oxigeno }} mg/L</p>
-                <p class="text-gray-400 text-xs">Rango óptimo: 7.0 - 9.0 mg/L</p>
+              <h1 class="text-3xl font-bold text-gray-800">SensorFarm Dashboard</h1>
+              <p class="text-gray-500 text-lg">Monitoreo simplificado y visual</p>
             </div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-3">
-            <!-- Icono de claridad -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l1.414-1.414M6.05 6.05L4.636 4.636" />
-            </svg>
-            <div>
-                <p class="text-gray-500 text-sm">Claridad del Agua</p>
-                <p class="text-2xl font-bold text-green-600">{{ claridad }}%</p>
-                <p class="text-gray-400 text-xs">Rango óptimo: > 85%</p>
-            </div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-3">
-            <!-- Icono de temperatura -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a2 2 0 012 2v12a2 2 0 11-4 0V4a2 2 0 012-2z" />
-            </svg>
-            <div>
-                <p class="text-gray-500 text-sm">Temperatura</p>
-                <p class="text-2xl font-bold text-green-600">{{ temperatura }}°C</p>
-                <p class="text-gray-400 text-xs">Rango óptimo: 18 - 25°C</p>
-            </div>
-        </div>
-    </div>
 
-    <!-- Info Biofiltro -->
-    <div class="flex flex-col md:flex-row gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-3 flex-1">
-            <!-- Icono de reloj -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <p class="text-gray-500 text-sm">Última Medición</p>
-                <p class="text-gray-700 font-semibold">{{ ultima_medicion }}</p>
+            <div class="flex items-center gap-2 text-gray-700 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>Vista Agricultor</span>
             </div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-3 flex-1">
-            <!-- Semáforo verde -->
-            <span class="inline-block h-4 w-4 rounded-full bg-green-500"></span>
-            <div>
-                <p class="text-gray-500 text-sm">Estado del Biofiltro</p>
-                <p class="text-gray-700 font-semibold">{{ estado_biofiltro }}</p>
-            </div>
-        </div>
-    </div>
+          </div>
 
-    <!-- Gráfico histórico -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <h3 class="text-gray-700 font-semibold mb-2">Histórico de Mediciones</h3>
-        <canvas id="chartMediciones" class="w-full h-64"></canvas>
-    </div>
+        <!-- Tarjetas principales (achicadas) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
-    <!-- Leyenda -->
-    <div class="flex items-center gap-2 text-gray-500 text-sm">
-        <!-- Icono de gota -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3.22l.61.72C15.1 7.1 18 10.45 18 14a6 6 0 11-12 0c0-3.55 2.9-6.9 5.39-10.06l.61-.72z" />
-        </svg>
-        <span>Norma Cumplida
-El agua analizada cumple con todos los parámetros establecidos en la normativa de calidad para uso agrícola. Los niveles de oxígeno disuelto, claridad y pH se encuentran dentro de los rangos óptimos para irrigación de cultivos.</span>
-    </div>
+  <!-- Estado Agua -->
+  <div class="rounded-xl shadow-md p-4 text-center text-gray-800 h-36 flex flex-col justify-center" style="background-color: #34f041cc;">
+    <p class="text-4xl mb-1">💧</p>
+    <p class="text-xl font-bold">{{ estado_agua }}</p>
+  </div>
+
+  <!-- Última revisión -->
+  <div class="rounded-xl shadow-md p-4 flex flex-col items-center justify-center bg-white h-36">
+    <p class="text-4xl mb-1">📅</p>
+    <p class="text-base font-bold">Última Revisión</p>
+    <p class="text-lg font-semibold text-gray-700">{{ ultima_revision }}</p>
+  </div>
+
+  <!-- Biofiltros -->
+  <div class="rounded-xl shadow-md p-4 flex flex-col items-center justify-center bg-white h-36">
+    <p class="text-4xl mb-1">⚙️</p>
+    <p class="text-base font-bold">Biofiltros</p>
+    <p class="text-lg font-semibold text-gray-700">{{ estado_biofiltro }}</p>
+  </div>
+
+  <!-- Planta eficiente -->
+  <div class="rounded-xl shadow-md p-4 flex flex-col items-center justify-center bg-white h-36">
+    <p class="text-4xl mb-1">🌱</p>
+    <p class="text-base font-bold">Planta más eficiente</p>
+    <p class="text-lg font-semibold text-gray-700">{{ planta_eficiente }}</p>
+  </div>
+
+  <!-- Cumple norma -->
+  <div class="rounded-xl shadow-md p-4 text-center text-gray-800 h-36 flex flex-col justify-center" style="background-color: #2eed64e8;">
+    <p class="text-4xl mb-1">✅</p>
+    <p class="text-xl font-bold">Cumple Norma</p>
+    <p class="text-lg font-semibold">{{ cumple_norma }}</p>
+  </div>
 
 </div>
 
-<script>
-const ctx = document.getElementById('chartMediciones').getContext('2d');
-const labels = {{ historico|safe }}.map(d => d.fecha);
-const oxigeno = {{ historico|safe }}.map(d => d.oxigeno);
-const claridad = {{ historico|safe }}.map(d => d.claridad);
+          <!-- Gráficos lado a lado -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Oxígeno (mg/L)',
-                data: oxigeno,
-                borderColor: '#10B981',
-                backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                tension: 0.3
-            },
-            {
-                label: 'Claridad (%)',
-                data: claridad,
-                borderColor: '#3B82F6',
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                tension: 0.3
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { y: { beginAtZero: true } }
-    }
-});
-</script>
+            <!-- Gráfico de barras -->
+            <div class="bg-white rounded-xl shadow-lg p-4 h-72 flex flex-col">
+              <h3 class="text-gray-700 font-semibold mb-2 text-center">Estado del Agua Mes a Mes</h3>
+              <canvas id="chartEstadoAgua" class="flex-1"></canvas>
 
-</body>
+              <!-- Leyenda debajo del gráfico -->
+              <div class="flex items-center justify-center gap-4 mt-4 text-sm text-gray-700">
+                <div class="flex items-center gap-1">
+                  <span class="inline-block w-4 h-4 bg-green-300 rounded"></span>
+                  <span>Agua Apta</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="inline-block w-4 h-4 bg-yellow-300 rounded"></span>
+                  <span>Agua con precaución</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="inline-block w-4 h-4 bg-red-300 rounded"></span>
+                  <span>Agua No Apta</span>
+                </div>
+              </div>
+            </div>
+
+          <!-- Gráfico de torta -->
+<div class="bg-white rounded-xl shadow-lg p-4 h-72 flex flex-col">
+  <h3 class="text-gray-700 font-semibold mb-2 text-center">Eficiencia de Plantas</h3>
+  
+  <!-- Contenedor del gráfico reducido dentro del cuadro -->
+  <div class="flex-1 flex items-center justify-center">
+    <canvas id="chartPlantas" class="max-h-40 w-full"></canvas>
+  </div>
+
+  <!-- Leyenda manual debajo (solo nombres) -->
+  <div class="flex flex-wrap justify-center gap-4 mt-4 text-sm text-gray-700">
+    {% for planta in eficiencia_plantas %}
+      <div class="flex items-center gap-1">
+        <span class="inline-block w-4 h-4 rounded" style="background-color: {{ planta.color }}"></span>
+        <span>{{ planta.nombre }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    {% include 'footer.html' %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      // Gráfico de barras
+      const ctx = document.getElementById('chartEstadoAgua').getContext('2d');
+      const labels = {{ historico_agua|safe }}.map(d => d.mes);
+      const valores = {{ historico_agua|safe }}.map(d => 1);
+      const colores = {{ historico_agua|safe }}.map(d => {
+        if (d.color === "green") return "#86efac";
+        if (d.color === "red") return "#fca5a5";
+        if (d.color === "yellow") return "#fef08a";
+        return "#d1d5db";
+      });
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ data: valores, backgroundColor: colores, borderWidth: 1 }] },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return {{ historico_agua|safe }}[ctx.dataIndex].estado; } } } },
+          scales: { y: { display: false }, x: { grid: { display: false } } }
+        }
+      });
+
+      // Gráfico de torta
+      const ctxPlantas = document.getElementById('chartPlantas').getContext('2d');
+      const nombresPlantas = {{ eficiencia_plantas|safe }}.map(p => p.nombre);
+      const valoresPlantas = {{ eficiencia_plantas|safe }}.map(p => p.eficiencia);
+      const coloresPlantas = {{ eficiencia_plantas|safe }}.map(p => p.color);
+
+      new Chart(ctxPlantas, {
+        type: 'pie',
+        data: { labels: nombresPlantas, datasets: [{ data: valoresPlantas, backgroundColor: coloresPlantas }] },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }, // Leyenda manual debajo
+            tooltip: { callbacks: { label: function(context) { const i = context.dataIndex; return nombresPlantas[i] + ': ' + valoresPlantas[i] + '%'; } } }
+          }
+        }
+      });
+    </script>
+
+  </body>
 </html>

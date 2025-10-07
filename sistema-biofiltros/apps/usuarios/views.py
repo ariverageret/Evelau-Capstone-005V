@@ -20,6 +20,8 @@ def mantenedor_usuarios_view(request):
         roles = []
     else:
         roles = result_roles
+        
+
 
     # Crear usuario
     if request.method == "POST" and "create_user" in request.POST:

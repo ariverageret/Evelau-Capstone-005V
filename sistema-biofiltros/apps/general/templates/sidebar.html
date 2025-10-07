@@ -1,21 +1,39 @@
-<aside class="bg-teal-800 text-white w-64 h-screen fixed top-0 left-0 flex flex-col shadow-lg">
-  <!-- Logo -->
-  <div class="flex items-center justify-center h-16 bg-teal-900">
-    <img src="https://via.placeholder.com/40" alt="Logo" class="h-10 w-10">
-    <span class="ml-3 font-bold text-lg">BioFiltros</span>
+{% load static %}
+
+<div class="flex min-h-screen flex-col">
+  
+  <!-- Contenido y sidebar -->
+  <div class="flex flex-1">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-teal-900/70 backdrop-blur-lg text-white flex flex-col items-start p-6 space-y-4 relative rounded-r-lg shadow-lg transition-transform duration-300">
+      <img src="{% static 'login/logo.png' %}" class="w-32 mb-6" alt="Logo">
+      <h1 class="text-xl font-bold mb-6">SensorFarms</h1>
+
+      {% for enlace in enlaces_sidebar %}
+        {% if enlace.url_name %}
+          <a href="{% url enlace.url_name %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">{{ enlace.nombre }}</a>
+        {% else %}
+          <a href="#" class="w-full text-center py-2 bg-teal-800 rounded opacity-50 cursor-not-allowed">{{ enlace.nombre }}</a>
+        {% endif %}
+      {% endfor %}
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="flex-1 p-6">
+      {% block contenido %}{% endblock %}
+    </main>
+
   </div>
 
-  <!-- Menú -->
-  <nav class="flex-1 px-4 py-6 space-y-2">
-    <a href="#" class="block px-3 py-2 rounded hover:bg-teal-700">Inicio</a>
-    <a href="#" class="block px-3 py-2 rounded hover:bg-teal-700">Sensores</a>
-    <a href="#" class="block px-3 py-2 rounded hover:bg-teal-700">Alertas</a>
-    <a href="#" class="block px-3 py-2 rounded hover:bg-teal-700">Reportes</a>
-    <a href="#" class="block px-3 py-2 rounded hover:bg-teal-700">Configuración</a>
-  </nav>
+  
+</div>
 
-  <!-- Footer pequeño en sidebar -->
-  <div class="p-4 text-xs text-gray-300 border-t border-teal-700">
-    &copy; 2025 BioFiltros
-  </div>
-</aside>
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleSidebar');
+
+  toggleBtn?.addEventListener('click', () => {
+    sidebar.classList.toggle('-translate-x-full');  // oculta o muestra el sidebar
+  });
+</script>
