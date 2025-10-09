@@ -32,7 +32,7 @@ class UsuarioUpdate(BaseModel):
 class UsuarioResponse(UsuarioBase):
     id_usuario: int
     estado: EstadoUsuario
-    fecha_creacion: datetime
+    fecha_creacion: datetime    
     rol : str
 
     class Config:

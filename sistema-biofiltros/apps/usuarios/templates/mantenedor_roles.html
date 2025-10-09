@@ -1,138 +1,138 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Gestión de Roles - SensorFarm</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body class="min-h-screen flex bg-cover bg-center" 
-      style="background-image: url('{% static "login/fondo.jpg" %}');">
+  {% include 'head.html' %}
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-teal-900/70 backdrop-blur-lg text-white flex flex-col items-start p-6 space-y-4 relative rounded-r-lg shadow-lg">
-    <img src="{% static 'login/logo.png' %}" class="w-32 mb-6" alt="Logo">
-    <h1 class="text-xl font-bold mb-6">BioFarms Admin</h1>
-    <a href="{% url 'principal_home' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Inicio</a>
-    <a href="{% url 'mantenedor_roles' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Roles</a>
-    <a href="{% url 'mantenedor_usuarios' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Usuarios</a>
-    <a class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Cerrar sesión</a>
-  </aside>
+  <body class="min-h-screen flex flex-col bg-cover bg-center relative"
+      style="background-image: url('{% static 'login/fondo.jpg' %}');">
 
+    {% include 'header.html' %}
 
-  <!-- Contenido principal -->
-  <main class="flex-1 p-10 bg-white/40 backdrop-blur-md rounded-l-lg shadow-lg">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lista de roles</h2>
+    <div class="flex flex-1">
 
-    <!-- Tabla de roles -->
-    <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
-      <thead class="bg-teal-800 text-white">
-        <tr>
-          <th class="px-4 py-2 text-left">Nombre del Rol</th>
-          <th class="px-4 py-2 text-left">Descripción</th>
-          <th class="px-4 py-2 text-center">Acción</th>
-        </tr>
-      </thead>
+      {% include 'sidebar.html' %}
 
-      <tbody class="divide-y divide-gray-200" id="roles-table">
-        {% for rol in roles %}
-        <tr data-id="{{ rol.id_rol }}">
-          <td class="px-4 py-2">{{ rol.nombre_rol }}</td>
-          <td class="px-4 py-2">{{ rol.descripcion }}</td>
-          <td class="px-4 py-2 text-center space-x-2">
-            <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Editar</button>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="3" class="px-4 py-2 text-center">No hay roles</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+      <main class="flex-1 p-6 overflow-y-auto">
+        <div class="max-w-6xl mx-auto">
 
-    <!-- Formulario de agregar/editar -->
-    <div class="flex justify-center mt-8">
-      <div class="p-6 bg-white shadow rounded-lg space-y-4 w-full max-w-md">
-        <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">Agregar Rol</h3>
-
-        <form class="space-y-4" method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="create_role" value="1">
-
-          <div>
-            <label class="block text-gray-700 mb-1">Nombre del Rol</label>
-            <input type="text" name="nombre_rol" class="w-full border px-3 py-2 rounded" placeholder="Nombre del rol" required>
+          <!-- Encabezado -->
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-800">Gestión de Roles</h1>
+              <p class="text-gray-500 text-lg">Administración y control de roles de usuario</p>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-gray-700 mb-1">Descripción</label>
-            <input type="text" name="descripcion" class="w-full border px-3 py-2 rounded" placeholder="Descripción del rol" required>
+          <!-- Tabla de roles -->
+          <div class="bg-white/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden mb-6">
+            <table class="min-w-full border border-gray-300">
+              <thead class="bg-teal-800 text-white">
+                <tr>
+                  <th class="px-4 py-2 text-left">Nombre del Rol</th>
+                  <th class="px-4 py-2 text-left">Descripción</th>
+                  <th class="px-4 py-2 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200" id="roles-table">
+                {% for rol in roles %}
+                <tr data-id="{{ rol.id_rol }}">
+                  <td class="px-4 py-2">{{ rol.nombre_rol }}</td>
+                  <td class="px-4 py-2">{{ rol.descripcion }}</td>
+                  <td class="px-4 py-2 text-center space-x-2">
+                    <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Editar</button>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="px-4 py-2 text-center">No hay roles</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
 
-          <div class="flex space-x-2">
-            <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
-            <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
+          <!-- Formulario de agregar/editar rol -->
+          <div class="bg-white/40 backdrop-blur-md rounded-xl shadow-lg p-6 max-w-md mx-auto">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 text-center" id="form-title">Agregar Rol</h3>
+            <form class="space-y-4" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="create_role" value="1">
+
+              <div>
+                <label class="block text-gray-700 mb-1">Nombre del Rol</label>
+                <input type="text" name="nombre_rol" class="w-full border px-3 py-2 rounded" placeholder="Nombre del rol" required>
+              </div>
+
+              <div>
+                <label class="block text-gray-700 mb-1">Descripción</label>
+                <input type="text" name="descripcion" class="w-full border px-3 py-2 rounded" placeholder="Descripción del rol" required>
+              </div>
+
+              <div class="flex space-x-2">
+                <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
+                <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
+
+        </div>
+      </main>
     </div>
-  </main>
 
-  <!-- SweetAlert para mensajes de Django -->
-  <script>
-    {% if messages %}
-      {% for message in messages %}
-        Swal.fire({
-          icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
-          title: "{{ message }}",
-          timer: 2500,
-          showConfirmButton: false
+    {% include 'footer.html' %}
+
+    <!-- SweetAlert para mensajes de Django -->
+    <script>
+      {% if messages %}
+        {% for message in messages %}
+          Swal.fire({
+            icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+            title: "{{ message }}",
+            timer: 2500,
+            showConfirmButton: false
+          });
+        {% endfor %}
+      {% endif %}
+    </script>
+
+    <!-- JS para editar roles -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const buttonsModificar = document.querySelectorAll(".btn-modificar");
+        const form = document.querySelector("form");
+        const title = document.getElementById("form-title");
+        const inputHidden = form.querySelector("input[name='create_role']");
+        const inputRoleId = document.createElement("input");
+        inputRoleId.type = "hidden";
+        inputRoleId.name = "role_id";
+
+        buttonsModificar.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const row = btn.closest("tr");
+            const nombre = row.children[0].textContent.trim();
+            const descripcion = row.children[1].textContent.trim();
+
+            inputRoleId.value = row.dataset.id || "";
+
+            title.textContent = "Editar Rol";
+            inputHidden.name = "edit_role";
+            form.appendChild(inputRoleId);
+
+            form.nombre_rol.value = nombre;
+            form.descripcion.value = descripcion;
+
+            form.scrollIntoView({ behavior: "smooth" });
+          });
         });
-      {% endfor %}
-    {% endif %}
-  </script>
 
-  <!-- JS para editar roles -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const buttonsModificar = document.querySelectorAll(".btn-modificar");
-      const form = document.querySelector("form");
-      const title = document.getElementById("form-title");
-      const inputHidden = form.querySelector("input[name='create_role']");
-      const inputRoleId = document.createElement("input");
-      inputRoleId.type = "hidden";
-      inputRoleId.name = "role_id";
-
-      // 🔹 Modo editar rol
-      buttonsModificar.forEach((btn) => {
-        btn.addEventListener("click", function () {
-          const row = btn.closest("tr");
-          const nombre = row.children[0].textContent.trim();
-          const descripcion = row.children[1].textContent.trim();
-
-          inputRoleId.value = row.dataset.id || "";
-
-          title.textContent = "Editar Rol";
-          inputHidden.name = "edit_role";
-          form.appendChild(inputRoleId);
-
-          form.nombre_rol.value = nombre;
-          form.descripcion.value = descripcion;
-
-          form.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("btn-cancelar").addEventListener("click", function () {
+          title.textContent = "Agregar Rol";
+          inputHidden.name = "create_role";
+          form.reset();
+          if (inputRoleId.parentNode) inputRoleId.remove();
         });
       });
+    </script>
 
-      // 🔹 Cancelar edición
-      document.getElementById("btn-cancelar").addEventListener("click", function () {
-        title.textContent = "Agregar Rol";
-        inputHidden.name = "create_role";
-        form.reset();
-        if (inputRoleId.parentNode) inputRoleId.remove();
-      });
-    });
-  </script>
-</body>
+  </body>
 </html>

@@ -3,117 +3,137 @@
 <html lang="es">
   {% include 'head.html' %}
 
-<body class="min-h-screen flex flex-col bg-cover bg-center" 
-      style="background-image: url('{% static "login/fondo.jpg" %}');">
+<body class="min-h-screen flex flex-col bg-cover bg-center relative"
+      style="background-image: url('{% static 'login/fondo.jpg' %}');">
 
-  <!-- Header -->
   {% include 'header.html' %}
 
-  <!-- Contenedor principal: sidebar + contenido -->
   <div class="flex flex-1 overflow-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-teal-900/70 backdrop-blur-lg text-white flex flex-col items-start p-6 space-y-4 relative rounded-r-lg shadow-lg overflow-auto">
-      <img src="{% static 'login/logo.png' %}" class="w-32 mb-6" alt="Logo">
-      <h1 class="text-xl font-bold mb-6">BioFarms Admin</h1>
-      <a href="{% url 'principal_home' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Inicio</a>
-      <a href="{% url 'mantenedor_roles' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Roles</a>
-      <a href="{% url 'mantenedor_usuarios' %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Usuarios</a>
-      <a class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">Cerrar sesión</a>
-    </aside>
+    {% include 'sidebar.html' %}
 
     <!-- Contenido principal -->
-    <main class="flex-1 p-10 bg-white/40 backdrop-blur-md rounded-l-lg shadow-lg overflow-auto">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">Lista de usuarios</h2>
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div class="max-w-6xl mx-auto">
 
-      <!-- Búsqueda -->
-      <div class="flex items-center mb-4 space-x-2">
-        <input type="text" id="search" placeholder="Ingresar correo" class="border px-4 py-2 rounded flex-1 bg-white">
-        <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" id="btn-buscar">Buscar</button>
-      </div>
-
-      <!-- Tabla de usuarios -->
-      <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
-        <thead class="bg-teal-800 text-white">
-          <tr>
-            <th class="px-4 py-2 text-left">Nombre</th>
-            <th class="px-4 py-2 text-left">Correo</th>
-            <th class="px-4 py-2 text-left">Password</th>
-            <th class="px-4 py-2 text-left">Rol</th>
-            <th class="px-4 py-2 text-left">Estado</th>
-            <th class="px-4 py-2 text-center">Acción</th>
-          </tr>
-        </thead>
-
-        <tbody class="divide-y divide-gray-200" id="user-table">
-          {% for user in users %}
-          <tr data-id="{{ user.id_usuario }}" data-rol="{{ user.rol|lower }}">
-            <td class="px-4 py-2">{{ user.username }}</td>
-            <td class="px-4 py-2">{{ user.email }}</td>
-            <td class="px-4 py-2">*****</td>
-            <td class="px-4 py-2">{{ user.rol }}</td>
-            <td class="px-4 py-2">{{ user.estado }}</td>
-            <td class="px-4 py-2 text-center space-x-2">
-              <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver">Ver</button>
-              <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Modificar</button>
-              <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar">Eliminar</button>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="6" class="px-4 py-2 text-center">No hay usuarios</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <!-- Formulario de agregar/editar -->
-      <div class="flex justify-center mt-8">
-        <div class="p-6 bg-white shadow rounded-lg space-y-4 w-full max-w-md">
-          <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">Agregar Usuario</h3>
-
-          <form class="space-y-4" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="create_user" value="1">
-
-            <div>
-              <label class="block text-gray-700 mb-1">Nombre</label>
-              <input type="text" name="username" class="w-full border px-3 py-2 rounded" placeholder="Nombre del usuario" required>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">Correo</label>
-              <input type="email" name="email" class="w-full border px-3 py-2 rounded" placeholder="Correo electrónico" required>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">Contraseña</label>
-              <input type="password" name="password" class="w-full border px-3 py-2 rounded" placeholder="Contraseña" required>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">Rol</label>
-              <select name="rol" class="w-full border px-3 py-2 rounded" required>
-                <option value="">Selecciona un rol</option>
-                {% for rol in roles %}
-                  <option value="{{ rol.nombre_rol }}">{{ rol.nombre_rol|capfirst }}</option>
-                {% empty %}
-                  <option disabled>No hay roles disponibles</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="flex space-x-2">
-              <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
-              <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
-            </div>
-          </form>
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
+            <p class="text-gray-500 text-lg">Administración y control de usuarios</p>
+          </div>
         </div>
+
+        <!-- Tarjetas de indicadores (opcional) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="rounded-xl shadow-md p-4 text-center bg-green-200/60 flex flex-col justify-center">
+            <p class="text-4xl mb-1">👥</p>
+            <p class="text-xl font-bold">Total Usuarios</p>
+            <p class="text-lg font-semibold">{{ total_usuarios }}</p>
+          </div>
+          <div class="rounded-xl shadow-md p-4 text-center bg-teal-200/60 flex flex-col justify-center">
+            <p class="text-4xl mb-1">🟢</p>
+            <p class="text-xl font-bold">Activos</p>
+            <p class="text-lg font-semibold">{{ usuarios_activos }}</p>
+          </div>
+          <div class="rounded-xl shadow-md p-4 text-center bg-red-200/60 flex flex-col justify-center">
+            <p class="text-4xl mb-1">🔴</p>
+            <p class="text-xl font-bold">Inactivos</p>
+            <p class="text-lg font-semibold">{{ usuarios_inactivos }}</p>
+          </div>
+        </div>
+
+        <!-- Búsqueda -->
+        <div class="flex items-center mb-4 space-x-2">
+          <input type="text" id="search" placeholder="Ingresar correo" class="border px-4 py-2 rounded flex-1 bg-white">
+          <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" id="btn-buscar">Buscar</button>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div class="bg-white/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden mb-6">
+          <table class="min-w-full border border-gray-300">
+            <thead class="bg-teal-800 text-white">
+              <tr>
+                <th class="px-4 py-2 text-left">Nombre</th>
+                <th class="px-4 py-2 text-left">Correo</th>
+                <th class="px-4 py-2 text-left">Password</th>
+                <th class="px-4 py-2 text-left">Rol</th>
+                <th class="px-4 py-2 text-left">Estado</th>
+                <th class="px-4 py-2 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="user-table">
+              {% for user in users %}
+              <tr data-id="{{ user.id_usuario }}" data-rol="{{ user.rol|lower }}">
+                <td class="px-4 py-2">{{ user.username }}</td>
+                <td class="px-4 py-2">{{ user.email }}</td>
+                <td class="px-4 py-2">*****</td>
+                <td class="px-4 py-2">{{ user.rol }}</td>
+                <td class="px-4 py-2">{{ user.estado }}</td>
+                <td class="px-4 py-2 text-center space-x-2">
+                  <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver">Ver</button>
+                  <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Modificar</button>
+                  <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar">Eliminar</button>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-2 text-center">No hay usuarios</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Formulario de agregar/editar -->
+        <div class="flex justify-center mt-8">
+          <div class="p-6 bg-white/40 backdrop-blur-md rounded-xl shadow-lg space-y-4 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">Agregar Usuario</h3>
+
+            <form class="space-y-4" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="create_user" value="1">
+
+              <div>
+                <label class="block text-gray-700 mb-1">Nombre</label>
+                <input type="text" name="username" class="w-full border px-3 py-2 rounded" placeholder="Nombre del usuario" required>
+              </div>
+
+              <div>
+                <label class="block text-gray-700 mb-1">Correo</label>
+                <input type="email" name="email" class="w-full border px-3 py-2 rounded" placeholder="Correo electrónico" required>
+              </div>
+
+              <div>
+                <label class="block text-gray-700 mb-1">Contraseña</label>
+                <input type="password" name="password" class="w-full border px-3 py-2 rounded" placeholder="Contraseña" required>
+              </div>
+
+              <div>
+                <label class="block text-gray-700 mb-1">Rol</label>
+                <select name="rol" class="w-full border px-3 py-2 rounded" required>
+                  <option value="">Selecciona un rol</option>
+                  {% for rol in roles %}
+                    <option value="{{ rol.nombre_rol }}">{{ rol.nombre_rol|capfirst }}</option>
+                  {% empty %}
+                    <option disabled>No hay roles disponibles</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="flex space-x-2">
+                <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
+                <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
 
-  <!-- Footer -->
   {% include 'footer.html' %}
 
   <!-- SweetAlert para mensajes de Django -->
@@ -130,7 +150,7 @@
     {% endif %}
   </script>
 
-  <!-- JS para modificar/eliminar usuarios -->
+  <!-- JS para editar/eliminar usuarios -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const buttonsModificar = document.querySelectorAll(".btn-modificar");
@@ -142,7 +162,6 @@
       inputUserId.type = "hidden";
       inputUserId.name = "user_id";
 
-      // Modo editar usuario
       buttonsModificar.forEach((btn) => {
         btn.addEventListener("click", function () {
           const row = btn.closest("tr");
@@ -151,7 +170,6 @@
           const rol = row.children[3].textContent.trim();
 
           inputUserId.value = row.dataset.id || "";
-
           title.textContent = "Editar Usuario";
           inputHidden.name = "edit_user";
           form.appendChild(inputUserId);
@@ -166,7 +184,6 @@
         });
       });
 
-      // Cancelar edición
       document.getElementById("btn-cancelar").addEventListener("click", function () {
         title.textContent = "Agregar Usuario";
         inputHidden.name = "create_user";
@@ -175,7 +192,6 @@
         form.password.required = true;
       });
 
-      // Eliminar usuario con SweetAlert
       buttonsEliminar.forEach((btn) => {
         btn.addEventListener("click", function () {
           const row = btn.closest("tr");
@@ -210,14 +226,4 @@
   </script>
 
 </body>
-<script>
-  const sidebar = document.getElementById('sidebar');
-  const toggleBtn = document.getElementById('toggleSidebar');
-
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');  // oculta o muestra el sidebar
-    });
-  }
-</script>
 </html>

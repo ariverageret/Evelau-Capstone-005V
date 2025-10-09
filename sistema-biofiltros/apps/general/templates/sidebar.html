@@ -1,34 +1,71 @@
-{% load static %}
+<!-- Sidebar -->
+<aside id="sidebar" class="w-64 bg-gradient-to-b from-teal-900/90 to-teal-800/90 backdrop-blur-xl text-white flex flex-col p-6 space-y-4 relative shadow-xl transition-transform duration-300">
 
-<div class="flex min-h-screen flex-col">
-  
-  <!-- Contenido y sidebar -->
-  <div class="flex flex-1">
+  <!-- Pestañas principales según rol -->
+  <nav class="flex flex-col space-y-2 w-full">
+    {% if user.rol == "Admin" %}
+      <a href="{% url 'agricultor' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-seedling text-teal-300"></i>
+        <span>Agricultor</span>
+      </a>
+      <a href="{% url 'principal_home' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-house text-teal-300"></i>
+        <span>Inicio</span>
+      </a>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-64 bg-teal-900/70 backdrop-blur-lg text-white flex flex-col items-start p-6 space-y-4 relative rounded-r-lg shadow-lg transition-transform duration-300">
-      <img src="{% static 'login/logo.png' %}" class="w-32 mb-6" alt="Logo">
-      <h1 class="text-xl font-bold mb-6">SensorFarms</h1>
+      <a href="{% url 'mantenedor_usuarios' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-users text-teal-300"></i>
+        <span>Mantenedor de Usuarios</span>
+      </a>
 
+      <a href="{% url 'mantenedor_roles' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-id-card-clip text-teal-300"></i>
+        <span>Roles y Permisos</span>
+      </a>
+    {% endif %}
+
+    {% if user.rol == "Analista" %}
+      <a href="{% url 'principal_home' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-house text-teal-300"></i>
+        <span>Inicio</span>
+      </a>
+      <a href="{% url 'agricultor' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-seedling text-teal-300"></i>
+        <span>Agricultor</span>
+      </a>
+    {% endif %}
+
+    {% if user.rol == "Agricultor" %}
+      <a href="{% url 'agricultor' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all hover:bg-teal-700/80 hover:translate-x-1">
+        <i class="fa-solid fa-seedling text-teal-300"></i>
+        <span>Mis Campos</span>
+      </a>
+    {% endif %}
+  </nav>
+
+  <!-- Enlaces adicionales dinámicos -->
+  {% if enlaces_sidebar %}
+  <div class="mt-6 border-t border-teal-700/50 pt-4">
+    <h2 class="text-xs uppercase tracking-widest text-teal-300 mb-2 font-semibold">Más Opciones</h2>
+    <nav class="flex flex-col space-y-2 w-full">
       {% for enlace in enlaces_sidebar %}
         {% if enlace.url_name %}
-          <a href="{% url enlace.url_name %}" class="w-full text-center py-2 bg-teal-800 rounded hover:bg-teal-600">{{ enlace.nombre }}</a>
+          <a href="{% url enlace.url_name %}" 
+             class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-teal-700/80 hover:translate-x-1 transition-all">
+            <i class="fa-solid fa-chevron-right text-teal-300"></i>
+            <span>{{ enlace.nombre }}</span>
+          </a>
         {% else %}
-          <a href="#" class="w-full text-center py-2 bg-teal-800 rounded opacity-50 cursor-not-allowed">{{ enlace.nombre }}</a>
+          <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl opacity-50 cursor-not-allowed">
+            <i class="fa-solid fa-ban text-gray-400"></i>
+            <span>{{ enlace.nombre }}</span>
+          </a>
         {% endif %}
       {% endfor %}
-    </aside>
-
-    <!-- Contenido principal -->
-    <main class="flex-1 p-6">
-      {% block contenido %}{% endblock %}
-    </main>
-
+    </nav>
   </div>
-
-  
-</div>
-
+  {% endif %}
+</aside>
 <script>
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggleSidebar');
@@ -37,3 +74,4 @@
     sidebar.classList.toggle('-translate-x-full');  // oculta o muestra el sidebar
   });
 </script>
+

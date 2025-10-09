@@ -9,8 +9,8 @@ import enum
 
 class TipoRol(enum.Enum):
     Admin = "Admin"
-    User = "User"
-    Guest = "Guest"
+    Agricultor = "Agricultor"
+    Analista = "Analista"
 
 class Rol(Base):
     __tablename__ = "rol"

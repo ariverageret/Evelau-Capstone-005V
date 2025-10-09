@@ -12,6 +12,21 @@ def mantenedor_usuarios_view(request):
         users = []
     else:
         users = result_users
+        
+        total_usuarios = len(users) if users else 0
+
+        usuarios_activos = len([u for u in users if u.get('estado', '').lower() == 'activo'])
+        usuarios_inactivos = len([u for u in users if u.get('estado', '').lower() != 'activo'])
+        analistas_activos = len([u for u in users if u.get('estado', '').lower() == 'activo' and u.get('rol', '').lower() == 'analista'])
+        context = {
+            "users": users,
+            "total_usuarios": total_usuarios,
+            "usuarios_activos": usuarios_activos,
+            "usuarios_inactivos": usuarios_inactivos,
+            "analistas_activos": analistas_activos,
+        }
+        
+        
 
     # Traer roles de la API
     result_roles = api.get_Roles()
@@ -85,7 +100,7 @@ def mantenedor_usuarios_view(request):
         return redirect("mantenedor_usuarios")
 
     # Renderizar la página con lista de usuarios y roles
-    return render(request, "mantenedor_usuarios.html", {"users": users, "roles": roles})
+    return render(request, "mantenedor_usuarios.html", {"users": users, "roles": roles, **context})
 
 def mantenedor_roles_view(request):
     # Traer roles de la API

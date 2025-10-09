@@ -11,6 +11,7 @@ username VARCHAR(50) NOT NULL UNIQUE,
 password_hash CHAR(64) NOT NULL, -- SE USARA SHA-256
 email VARCHAR(100) NOT NULL UNIQUE, 
 estado ENUM('Activo','Inactivo','Bloqueado') DEFAULT('Activo'),
+rol varchar(20) NOT NULL,
 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -20,14 +21,6 @@ nombre_rol VARCHAR(50),
 descripcion LONGTEXT
 );
 
-CREATE TABLE USUARIO_ROLES (
-    id_usuario INT,
-    id_rol INT,
-    asignado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_usuario, id_rol),
-    FOREIGN KEY (id_usuario) REFERENCES USUARIOS(id_usuario) ON DELETE CASCADE,
-    FOREIGN KEY (id_rol) REFERENCES ROL(id_rol) ON DELETE CASCADE
-);
 
 CREATE TABLE ERRORES (
 id_error INT AUTO_INCREMENT PRIMARY KEY,

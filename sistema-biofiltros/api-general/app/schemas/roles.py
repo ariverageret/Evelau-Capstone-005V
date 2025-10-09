@@ -5,8 +5,8 @@ from enum import Enum
 
 class TipoRol(str, Enum):
     Admin = "Admin"
-    User = "User"
-    Guest = "Guest"
+    Agricultor = "Agricultor"
+    Analista = "Analista"
 
 class RolBase(BaseModel):
     nombre_rol: TipoRol

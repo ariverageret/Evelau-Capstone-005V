@@ -1,17 +1,37 @@
 {% load static %}
 
-<header class="bg-teal-800 text-white flex justify-between items-center shadow-md py-2 px-4">
-  <div class="flex items-center space-x-3">
-    <!-- Botón para ocultar/mostrar sidebar -->
-    <button id="toggleSidebar" class="mb-0 px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-500">
-      ☰
+<header class="bg-gradient-to-r from-teal-900 to-teal-700 text-white flex justify-between items-center shadow-lg px-6 py-3 z-40">
+  <div class="flex items-center space-x-4">
+    <!-- Botón toggle sidebar -->
+    <button id="toggleSidebar"
+      class="text-white bg-teal-600 hover:bg-teal-500 px-3 py-2 rounded-lg shadow-md transition-all duration-200 focus:outline-none">
+      <i class="fa-solid fa-bars"></i>
     </button>
-    <img src="{% static 'login/logo.png' %}" alt="Logo" class="h-12 w-auto">
-    <h1 class="text-lg font-semibold tracking-wide">SensorFarms - Monitoreo de Aguas Grises</h1>
+
+    <!-- Logo y título -->
+    <img src="{% static 'login/logo.png' %}" alt="Logo" class="h-10 w-auto drop-shadow-md">
+    <h1 class="text-lg sm:text-xl font-semibold tracking-wide">SensorFarms</h1>
+    <span class="text-teal-200 hidden sm:inline-block text-sm font-medium">| Monitoreo de Aguas Grises</span>
   </div>
 
+  <!-- Usuario -->
   <div class="flex items-center space-x-4">
-    <span class="text-sm">Bienvenida, {{ user.username|default:'Invitado' }}</span>
-    <a href="#" class="bg-teal-600 hover:bg-teal-500 px-3 py-1 rounded-md text-sm font-medium">Cerrar sesión</a>
+    <span class="text-sm text-teal-100 italic">Bienvenida, {{ user.username|default:'Invitado' }}</span>
+    <a href="{% url 'logout' %}"
+       class="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      Cerrar sesión
+    </a>
   </div>
+  <!-- Script de toggle (este se queda aquí en el header) -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("toggleSidebar");
+
+    toggleBtn?.addEventListener("click", () => {
+      // Dispara evento global
+      window.dispatchEvent(new Event("toggle-sidebar"));
+    });
+  });
+</script>
 </header>

@@ -1,25 +1,48 @@
 from django.shortcuts import render, redirect
 from apps.login.api import APIClient
+from apps.usuarios.api import APIClient as UsuariosAPIClient
 from datetime import datetime
+from django.contrib import messages
 
 api = APIClient()
+usuarios_api = UsuariosAPIClient()
 
 def principal_home(request):
+    # Verificar token
     token = request.session.get('api_token')
     expiry = request.session.get('token_expiry')
     if not token or not expiry or datetime.utcnow().timestamp() > expiry:
-        # Token no existe o expiró
         request.session.flush()
         return redirect("login")
 
     api.token = token
     user_info = api.me()
-    return render(request, "principal/index.html", {"user": user_info})
 
-from datetime import datetime
+    # Traer usuarios de la API
+    result_users = usuarios_api.get_Users()
+    if isinstance(result_users, dict) and "error" in result_users:
+        messages.error(request, f"Error al obtener usuarios: {result_users['error']}")
+        users = []
+    else:
+        users = result_users
+
+    # Calcular estadísticas
+    total_usuarios = len(users) if users else 0
+    usuarios_activos = len([u for u in users if u.get('estado', '').lower() == 'activo'])
+    usuarios_inactivos = len([u for u in users if u.get('estado', '').lower() != 'activo'])
+    analistas_activos = len([u for u in users if u.get('estado', '').lower() == 'activo' and u.get('rol', '').lower() == 'Analista'])
+
+    context = {
+        "user": user_info,
+        "total_usuarios": total_usuarios,
+        "usuarios_activos": usuarios_activos,
+        "usuarios_inactivos": usuarios_inactivos,
+        "analistas_activos": analistas_activos,
+    }
+
+    return render(request, "principal/index.html", context)
 
 
-from django.shortcuts import render
 
 def agricultor_view(request):
     # --- Estado principal del agua ---
