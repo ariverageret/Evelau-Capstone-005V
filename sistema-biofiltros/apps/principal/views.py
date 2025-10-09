@@ -102,3 +102,27 @@ def agricultor_view(request):
 
     
     return render(request, "principal/agricultor.html", contexto)
+
+
+
+def analista_dashboard(request):
+    """
+    Vista para mostrar el dashboard del analista
+    """
+    return render(request, "principal/analista.html")
+
+
+def sensors_view(request):
+    return render(request, 'principal/sensors.html')
+
+def biofilters_view(request):
+    return render(request, 'principal/biofilters.html')
+
+def analysis_view(request):
+    return render(request, 'principal/analysis.html')
+
+def history_view(request):
+    return render(request, 'principal/history.html')
+
+def predictions_view(request):
+    return render(request, 'principal/predictions.html')

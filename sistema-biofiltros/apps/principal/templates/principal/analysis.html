@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+{% include 'head.html' %}
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="min-h-screen flex bg-gray-50">
+
+<div class="flex flex-1 min-h-screen">
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Contenedor principal -->
+    <div class="flex-1 flex flex-col min-h-screen">
+
+        <!-- Header -->
+        {% include 'header.html' %}
+
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto px-6 py-6">
+
+            <!-- Pestañas visuales -->
+            <div class="grid grid-cols-6 gap-2 mb-6 p-1">
+                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded bg-blue-200 hover:bg-blue-300">
+                    <span class="text-2xl">📊</span>
+                    <span class="text-sm font-bold">Resumen</span>
+                </a>
+                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded bg-green-200 hover:bg-green-300">
+                    <span class="text-2xl">🌡️</span>
+                    <span class="text-sm font-bold">Sensores</span>
+                </a>
+                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded bg-yellow-200 hover:bg-yellow-300">
+                    <span class="text-2xl">💧</span>
+                    <span class="text-sm font-bold">Biofiltros</span>
+                </a>
+                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded bg-purple-300 hover:bg-purple-400">
+                    <span class="text-2xl">🔬</span>
+                    <span class="text-sm font-bold">Análisis</span>
+                </a>
+                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200 hover:bg-red-300">
+                    <span class="text-2xl">📜</span>
+                    <span class="text-sm font-bold">Historial</span>
+                </a>
+                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded bg-indigo-200 hover:bg-indigo-300">
+                    <span class="text-2xl">🔮</span>
+                    <span class="text-sm font-bold">Predicciones</span>
+                </a>
+            </div>
+
+            <!-- Contenido de Análisis -->
+            <div class="space-y-6">
+
+                <h2 class="text-2xl font-bold flex items-center gap-2">🔬 Análisis</h2>
+                <p class="text-gray-500 text-sm">Gráficos y estadísticas para comprender el comportamiento del sistema.</p>
+
+                <!-- Contenedor horizontal de gráficos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                    <!-- pH promedio semanal -->
+                    <div class="bg-white shadow rounded-lg p-4">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">⚗️ pH promedio semanal</h3>
+                        <div class="w-full h-64">
+                            <canvas id="phChart"></canvas>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-2">Valores promedio de pH diarios. ✅ Dentro de rango saludable, ❌ fuera del rango.</p>
+                    </div>
+
+                    <!-- Volumen diario de tratamiento -->
+                    <div class="bg-white shadow rounded-lg p-4">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">💦 Volumen diario de tratamiento</h3>
+                        <div class="w-full h-64">
+                            <canvas id="volumeChart"></canvas>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-2">Cantidad de agua tratada cada día. 🔹 Más alto = mejor rendimiento.</p>
+                    </div>
+
+                    <!-- Oxígeno disuelto -->
+                    <div class="bg-white shadow rounded-lg p-4">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">🧪 Oxígeno disuelto (OD)</h3>
+                        <div class="w-full h-64">
+                            <canvas id="odChart"></canvas>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-2">Concentración de oxígeno disuelto. Valores verdes ✅ indican niveles adecuados.</p>
+                    </div>
+
+                    <!-- Gráfico de torta -->
+                    <div class="bg-white shadow rounded-lg p-4">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">📊 Proporción de Biofiltros eficientes</h3>
+                        <div class="w-full h-64">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-2">Comparación de eficiencia de los biofiltros. 💧 Mejor rendimiento = más alto en el gráfico.</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-auto">
+            {% include 'footer.html' %}
+        </footer>
+
+    </div>
+</div>
+
+<!-- Scripts Chart.js -->
+<script>
+    // Gráfico pH
+    const phCtx = document.getElementById('phChart').getContext('2d');
+    new Chart(phCtx, {
+        type: 'line',
+        data: {
+            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],
+            datasets: [{
+                label: 'pH',
+                data: [7.0,7.1,7.2,7.3,7.2,7.1,7.2],
+                borderColor: 'rgb(59,130,246)',
+                backgroundColor: 'rgba(59,130,246,0.2)',
+                tension: 0.4
+            }]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:14} } } } }
+    });
+
+    // Gráfico volumen
+    const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+    new Chart(volumeCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],
+            datasets: [{
+                label: 'Volumen (L)',
+                data: [1200,1250,1300,1280,1275,1320,1310],
+                backgroundColor: 'rgba(34,197,94,0.6)',
+                borderColor: 'rgb(34,197,94)',
+                borderWidth: 1
+            }]
+        },
+        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    // Gráfico OD
+    const odCtx = document.getElementById('odChart').getContext('2d');
+    new Chart(odCtx, {
+        type: 'line',
+        data: {
+            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],
+            datasets: [{
+                label: 'OD (mg/L)',
+                data: [6,5.8,6.1,5.9,6,6.2,6],
+                borderColor: 'rgb(34,197,94)',
+                backgroundColor: 'rgba(34,197,94,0.2)',
+                tension: 0.3
+            }]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:14} } } } }
+    });
+
+    // Gráfico de torta
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Biofiltro A', 'Biofiltro B', 'Biofiltro C'],
+            datasets: [{
+                label: 'Eficiencia (%)',
+                data: [90,85,95],
+                backgroundColor: ['#34D399','#FBBF24','#60A5FA']
+            }]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:14} } } } }
+    });
+</script>
+
+</body>
+</html>

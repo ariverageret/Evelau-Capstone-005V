@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+{% include 'head.html' %}
+
+<body class="min-h-screen flex bg-gray-50">
+
+<div class="flex flex-1 min-h-screen">
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Contenedor principal -->
+    <div class="flex-1 flex flex-col min-h-screen">
+
+        <!-- Header -->
+        {% include 'header.html' %}
+
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto px-6 py-6">
+
+            <!-- Pestañas visuales -->
+            <div class="grid grid-cols-6 gap-2 mb-6 p-1">
+                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded bg-blue-200 hover:bg-blue-300">
+                    <span class="text-2xl">📊</span>
+                    <span class="text-sm font-bold">Resumen</span>
+                </a>
+                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded bg-green-300 hover:bg-green-400">
+                    <span class="text-2xl">🌡️</span>
+                    <span class="text-sm font-bold">Sensores</span>
+                </a>
+                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded bg-yellow-200 hover:bg-yellow-300">
+                    <span class="text-2xl">💧</span>
+                    <span class="text-sm font-bold">Biofiltros</span>
+                </a>
+                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded bg-purple-200 hover:bg-purple-300">
+                    <span class="text-2xl">🔬</span>
+                    <span class="text-sm font-bold">Análisis</span>
+                </a>
+                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200 hover:bg-red-300">
+                    <span class="text-2xl">📜</span>
+                    <span class="text-sm font-bold">Historial</span>
+                </a>
+                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded bg-indigo-200 hover:bg-indigo-300">
+                    <span class="text-2xl">🔮</span>
+                    <span class="text-sm font-bold">Predicciones</span>
+                </a>
+            </div>
+
+            <!-- Contenido Sensores -->
+            <div class="space-y-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2">🌡️ Sensores</h2>
+                <p class="text-gray-500 text-sm">Monitoreo en tiempo real de todos los sensores del sistema.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Sensor pH -->
+                    <div class="bg-white shadow rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-xl font-bold">⚗️ pH</span>
+                        <span class="text-3xl font-bold text-green-600 mt-2">7.2</span>
+                        <p class="text-gray-500 text-xs mt-1">Dentro del rango</p>
+                    </div>
+                    <!-- Sensor Temperatura -->
+                    <div class="bg-white shadow rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-xl font-bold">🌡️ Temperatura</span>
+                        <span class="text-3xl font-bold text-green-600 mt-2">22.5°C</span>
+                        <p class="text-gray-500 text-xs mt-1">Normal</p>
+                    </div>
+                    <!-- Sensor Turbidez -->
+                    <div class="bg-white shadow rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-xl font-bold">💧 Turbidez</span>
+                        <span class="text-3xl font-bold text-green-600 mt-2">5 NTU</span>
+                        <p class="text-gray-500 text-xs mt-1">Normal</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-auto">
+            {% include 'footer.html' %}
+        </footer>
+
+    </div>
+</div>
+</body>
+</html>
