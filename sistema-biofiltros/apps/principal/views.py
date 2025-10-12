@@ -1,11 +1,15 @@
 from django.shortcuts import render, redirect
 from apps.login.api import APIClient
 from apps.usuarios.api import APIClient as UsuariosAPIClient
+from apps.principal.api import APIClient as APIPrincipalClient
 from datetime import datetime
 from django.contrib import messages
+from collections import OrderedDict
+
 
 api = APIClient()
 usuarios_api = UsuariosAPIClient()
+api_principal = APIPrincipalClient()
 
 def principal_home(request):
     # Verificar token
@@ -43,67 +47,98 @@ def principal_home(request):
     return render(request, "principal/index.html", context)
 
 
-
 def agricultor_view(request):
-    # --- Estado principal del agua ---
-    estado_agua = "Agua Apta"
-    color_estado_agua = "#10B981"  # verde
-    estado_agua_emoji = "✅"
+    eficiencia_data = api_principal.get_eficiencia() or []
 
-    # --- Última revisión ---
-    ultima_revision = datetime.now().strftime("%d-%m-%Y %H:%M")
+    def color_por_eficiencia(valor):
+        """Devuelve color según eficiencia de planta."""
+        if valor >= 85:
+            return "#34f041cc"  # verde
+        elif valor >= 75:
+            return "#f0c419cc"  # amarillo
+        else:
+            return "#f04334cc"  # rojo
 
-    # --- Estado de biofiltros ---
-    estado_biofiltro = "Funcionando"
-    estado_biofiltro_emoji = "🟢"
+    if isinstance(eficiencia_data, list) and eficiencia_data:
+        # 🔹 Agrupar por día y quedarse con el último registro
+        registros_por_dia = OrderedDict()
+        for reg in eficiencia_data:
+            try:
+                fecha_obj = datetime.strptime(reg["timestamp"], "%Y-%m-%dT%H:%M:%S")
+            except (ValueError, KeyError):
+                continue
+            fecha_dia = fecha_obj.date().isoformat()
+            registros_por_dia.setdefault(fecha_dia, reg)
 
-    # --- Planta más eficiente ---
-    planta_eficiente = "Carrizo Enano"
+        registros_filtrados = list(registros_por_dia.values())
+        ultimo_registro = registros_filtrados[0]
 
-    # --- Cumplimiento norma ---
-    cumple_norma = "Sí"
-    if cumple_norma == "Sí":
-        color_norma = "#10B981"  # verde
-        norma_emoji = "✅"
+        # Fecha última revisión
+        try:
+            ultima_revision = datetime.strptime(ultimo_registro["timestamp"], "%Y-%m-%dT%H:%M:%S")\
+                               .strftime("%d/%m/%Y %H:%M")
+        except (ValueError, KeyError):
+            ultima_revision = ultimo_registro.get("timestamp", "-")
+
+        # Estado agua y color
+        cumple_norma = bool(ultimo_registro.get("cumple_norma"))
+        estado_agua = "Cumple Norma" if cumple_norma else "No Cumple Norma"
+        cumple_norma_color = "#2eed64e8" if cumple_norma else "#f04334e8"
+
+        # Biofiltros
+        biofiltros_nombres = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
+        biofiltros = {nombre: ultimo_registro.get(f"eficiencia_bf{i+1}_turbidez") 
+                      for i, nombre in enumerate(biofiltros_nombres)}
+
+        biofiltros_fallando = [n for n, v in biofiltros.items() if v is None]
+        estado_biofiltro = "Funcionando" if not biofiltros_fallando else f"No Funcionando ({', '.join(biofiltros_fallando)})"
+
+        # Planta más eficiente
+        plantas_validas = [(n, float(v)) for n, v in biofiltros.items() if v is not None]
+        planta_eficiente = min(plantas_validas, key=lambda x: x[1])[0] if plantas_validas else "-"
+
+        # Eficiencia de cada planta con color
+        eficiencia_plantas = [
+            {"nombre": nombre, "valor": float(valor), "color": color_por_eficiencia(float(valor))}
+            for nombre, valor in biofiltros.items() if valor is not None
+        ]
+
+        # Datos para gráfico de barras (último registro de cada día)
+        etiquetas, valores, colores = [], [], []
+        for reg in reversed(registros_filtrados):  # más antiguo → más reciente
+            try:
+                fecha = datetime.strptime(reg["timestamp"][:10], "%Y-%m-%d").strftime("%d/%m")
+            except (ValueError, KeyError):
+                continue
+            etiquetas.append(fecha)
+            valores.append(float(reg.get("eficiencia_turbidez_global", 0)))
+            colores.append("rgba(46, 237, 100, 0.8)" if reg.get("cumple_norma") else "rgba(240, 67, 52, 0.8)")
+
     else:
-        color_norma = "#EF4444"  # rojo
-        norma_emoji = "❌"
-
-    # --- Histórico simplificado de agua por mes ---
-    historico_agua = [
-        {"mes": "Feb", "estado": "Agua Apta", "color": "green"},
-        {"mes": "Mar", "estado": "Agua No Apta", "color": "red"},
-        {"mes": "Abr", "estado": "Agua Apta", "color": "green"},
-        {"mes": "May", "estado": "Agua con precaución", "color": "yellow"},
-        {"mes": "Jun", "estado": "Agua Apta", "color": "green"},
-    ]
-
-    # --- Eficiencia de plantas para gráfico de torta ---
-    eficiencia_plantas = [
-        {"nombre": "Carrizo Enano", "eficiencia": 50, "color": "#10B981"},
-        {"nombre": "Papiro Enano", "eficiencia": 30, "color": "#3B82F6"},
-        {"nombre": "Hierba de Sapo", "eficiencia": 20, "color": "#F59E0B"},
-    ]
+        # Si no hay datos
+        ultimo_registro = None
+        estado_agua = estado_biofiltro = planta_eficiente = "Sin datos"
+        cumple_norma = False
+        cumple_norma_color = "#cccccc"
+        eficiencia_plantas = []
+        etiquetas = valores = colores = []
+        ultima_revision = "-"
 
     contexto = {
+        "eficiencia_data": eficiencia_data,
         "estado_agua": estado_agua,
-        "color_estado_agua": color_estado_agua,
-        "estado_agua_emoji": estado_agua_emoji,
         "ultima_revision": ultima_revision,
         "estado_biofiltro": estado_biofiltro,
-        "estado_biofiltro_emoji": estado_biofiltro_emoji,
         "planta_eficiente": planta_eficiente,
-        "cumple_norma": cumple_norma,
-        "color_norma": color_norma,
-        "norma_emoji": norma_emoji,
-        "historico_agua": historico_agua,
+        "cumple_norma": "Sí" if cumple_norma else "No",
+        "cumple_norma_color": cumple_norma_color,
         "eficiencia_plantas": eficiencia_plantas,
+        "chart_labels": etiquetas,
+        "chart_data": valores,
+        "chart_colors": colores,
     }
 
-    
     return render(request, "principal/agricultor.html", contexto)
-
-
 
 def analista_dashboard(request):
     """

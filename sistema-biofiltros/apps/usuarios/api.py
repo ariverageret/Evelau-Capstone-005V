@@ -26,9 +26,13 @@ class APIClient:
         except ValueError:
             return {"error": f"Respuesta inválida del servidor: {response.text}"}
 
-        if response.status_code == 201:
+        # Considera 200 o 201 como éxito
+        if response.status_code in [200, 201]:
             return data
+
+        # Solo si es otro código, lo tomamos como error
         return {"error": data}
+
     
     def update_User(self, user_id: int, username: str = None, email: str = None, rol: str = None, password: str = None, estado: str = None):
         url = f"{self.base_url}/usuarios/ModificarUsuario"
