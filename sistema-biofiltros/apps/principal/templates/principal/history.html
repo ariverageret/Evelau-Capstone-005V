@@ -19,60 +19,63 @@
 
 
             <!-- Pestañas visuales -->
-            <div class="grid grid-cols-6 gap-2 mb-6 p-1">
-                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded hover:bg-blue-200">
+<div class="grid grid-cols-6 gap-2 mb-6 p-1">
+                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded bg-blue-200 hover:bg-blue-300">
                     <span class="text-2xl">📊</span>
                     <span class="text-sm font-bold">Resumen</span>
                 </a>
-                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded hover:bg-green-200">
+                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded bg-green-200 hover:bg-green-300">
                     <span class="text-2xl">🌡️</span>
                     <span class="text-sm font-bold">Sensores</span>
                 </a>
-                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded hover:bg-yellow-300">
+                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded bg-yellow-200 hover:bg-yellow-300">
                     <span class="text-2xl">💧</span>
                     <span class="text-sm font-bold">Biofiltros</span>
                 </a>
-                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded hover:bg-purple-300">
+                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded bg-purple-200 hover:bg-purple-300">
                     <span class="text-2xl">🔬</span>
                     <span class="text-sm font-bold">Análisis</span>
                 </a>
-                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200">
+                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200 hover:bg-red-300">
                     <span class="text-2xl">📜</span>
                     <span class="text-sm font-bold">Historial</span>
                 </a>
-                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded hover:bg-indigo-200">
+                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded bg-indigo-200 hover:bg-indigo-300">
                     <span class="text-2xl">🔮</span>
                     <span class="text-sm font-bold">Predicciones</span>
                 </a>
             </div>
 
+
             <!-- Contenido Historial -->
             <div class="space-y-6">
-                <h2 class="text-2xl font-bold flex items-center gap-2">📜 Historial</h2>
-                <p class="text-gray-500 text-sm">Registro histórico de datos de pH, volumen y OD.</p>
+                <h2 class="text-2xl font-bold flex items-center gap-2 justify-center">📜 Historial</h2>
+                <p class="text-gray-500 text-sm text-center">Registro histórico de datos de pH y volumen del último mes.</p>
 
                 <!-- Grid de gráficos -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
                     <!-- Gráfico pH histórico -->
                     <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2">pH diario (último mes)</h3>
-                        <div class="w-full h-64">
+                        <h3 class="font-semibold mb-2 text-center">pH diario (último mes)</h3>
+                        <div class="w-full h-64 flex justify-center items-center">
                             <canvas id="phHistoryChart"></canvas>
                         </div>
                     </div>
 
                     <!-- Gráfico Volumen histórico -->
                     <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2">Volumen diario (último mes)</h3>
-                        <div class="w-full h-64">
+                        <h3 class="font-semibold mb-2 text-center">Volumen diario (último mes)</h3>
+                        <div class="w-full h-64 flex justify-center items-center">
                             <canvas id="volumeHistoryChart"></canvas>
                         </div>
                     </div>
+
                 </div>
 
-                <!-- Tabla resumen opcional -->
+                <!-- Tabla resumen semanal -->
                 <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                    <h3 class="font-semibold mb-2">Resumen semanal</h3>
+                    <h3 class="font-semibold mb-2 text-center">Resumen semanal</h3>
                     <table class="min-w-full text-sm">
                         <thead class="bg-gray-100">
                             <tr>
@@ -83,24 +86,14 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for row in resumen_semanal %}
                             <tr class="border-b">
-                                <td class="p-2">Semana 1</td>
-                                <td class="p-2">7.2</td>
-                                <td class="p-2">1250</td>
-                                <td class="p-2">6.0</td>
+                                <td class="p-2">{{ row.semana }}</td>
+                                <td class="p-2">{{ row.ph_promedio }}</td>
+                                <td class="p-2">{{ row.volumen_promedio }}</td>
+                                <td class="p-2">{{ row.od_promedio }}</td>
                             </tr>
-                            <tr class="border-b">
-                                <td class="p-2">Semana 2</td>
-                                <td class="p-2">7.1</td>
-                                <td class="p-2">1270</td>
-                                <td class="p-2">5.8</td>
-                            </tr>
-                            <tr class="border-b">
-                                <td class="p-2">Semana 3</td>
-                                <td class="p-2">7.3</td>
-                                <td class="p-2">1285</td>
-                                <td class="p-2">6.2</td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -116,17 +109,15 @@
     </div>
 </div>
 
-<!-- Scripts gráficos -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const phHistoryCtx = document.getElementById('phHistoryChart').getContext('2d');
-    const phHistoryChart = new Chart(phHistoryCtx, {
+       const phHistoryCtx = document.getElementById('phHistoryChart').getContext('2d');
+    new Chart(phHistoryCtx, {
         type: 'line',
         data: {
-            labels: Array.from({length:30}, (_,i)=>`Día ${i+1}`),
+            labels: {{ ph_history_labels|safe }},
             datasets: [{
                 label: 'pH',
-                data: Array.from({length:30}, ()=>7 + Math.random()*0.5),
+                data: {{ ph_history_data|safe }},
                 borderColor: '#E53E3E',
                 backgroundColor: 'rgba(229,62,62,0.2)',
                 tension: 0.3
@@ -136,13 +127,13 @@
     });
 
     const volumeHistoryCtx = document.getElementById('volumeHistoryChart').getContext('2d');
-    const volumeHistoryChart = new Chart(volumeHistoryCtx, {
+    new Chart(volumeHistoryCtx, {
         type: 'bar',
         data: {
-            labels: Array.from({length:30}, (_,i)=>`Día ${i+1}`),
+            labels: {{ ph_history_labels|safe }},
             datasets: [{
                 label: 'Volumen (L)',
-                data: Array.from({length:30}, ()=>1200 + Math.random()*150),
+                data: {{ volume_history_data|safe }},
                 backgroundColor: '#DD6B20'
             }]
         },

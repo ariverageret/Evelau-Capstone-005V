@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect
 from apps.login.api import APIClient
 from apps.usuarios.api import APIClient as UsuariosAPIClient
 from apps.principal.api import APIClient as APIPrincipalClient
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from django.contrib import messages
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
+import random
 
 
 api = APIClient()
@@ -34,7 +35,18 @@ def principal_home(request):
     total_usuarios = len(users) if users else 0
     usuarios_activos = len([u for u in users if u.get('estado', '').lower() == 'activo'])
     usuarios_inactivos = len([u for u in users if u.get('estado', '').lower() != 'activo'])
-    analistas_activos = len([u for u in users if u.get('estado', '').lower() == 'activo' and u.get('rol', '').lower() == 'Analista'])
+    analistas_activos = len([u for u in users if u.get('estado', '').lower() == 'activo' and u.get('rol', '').lower() == 'analista'])
+
+    # 🔹 Datos inventados para alertas y gráficos
+    alertas_recientes = random.randint(0, 10)  # número de alertas recientes
+
+    # Actividad de sensores (últimos 7 días)
+    sensores_labels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    sensores_data = [random.randint(80, 100) for _ in sensores_labels]  # % de actividad por día
+
+    # Alertas por planta
+    plantas_labels = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
+    alertas_data = [random.randint(0, 5) for _ in plantas_labels]  # cantidad de alertas por planta
 
     context = {
         "user": user_info,
@@ -42,14 +54,21 @@ def principal_home(request):
         "usuarios_activos": usuarios_activos,
         "usuarios_inactivos": usuarios_inactivos,
         "analistas_activos": analistas_activos,
+        # Datos inventados
+        "alertas_recientes": alertas_recientes,
+        "sensores_labels": sensores_labels,
+        "sensores_data": sensores_data,
+        "plantas_labels": plantas_labels,
+        "alertas_data": alertas_data,
     }
 
     return render(request, "principal/index.html", context)
 
 
+
 def agricultor_view(request):
     eficiencia_data = api_principal.get_eficiencia() or []
-
+    
     def color_por_eficiencia(valor):
         """Devuelve color según eficiencia de planta."""
         if valor >= 85:
@@ -142,22 +161,405 @@ def agricultor_view(request):
 
 def analista_dashboard(request):
     """
-    Vista para mostrar el dashboard del analista
+    Dashboard del analista - reutiliza la lógica de agricultor_view
     """
-    return render(request, "principal/analista.html")
+    eficiencia_data = api_principal.get_eficiencia() or []
+    lecturas_data = api_principal.get_lecturas() or []
+    
+    ph_actual = temperatura_actual = volumen_diario = ocupantes_actual = 0
+    ph_data, turbidez_data, fechas_mes = [], [], []
 
+    if isinstance(lecturas_data, list) and lecturas_data:
+        hoy = datetime.now().date()
+        lecturas_hoy = [l for l in lecturas_data if l.get("timestamp", "").startswith(hoy.isoformat())]
+        
+        lecturas_salida = [l for l in lecturas_hoy if l.get("biofiltro_id") == 3]
+
+        # 🔹 Tomar la última por ID (más confiable que timestamp)
+        if lecturas_hoy:
+            ultima_lectura = max(lecturas_hoy, key=lambda x: x.get("id", 0))
+        else:
+            ultima_lectura = None
+
+        # 🔹 Extraer valores si existe la última lectura
+        ph_actual = ultima_lectura.get("ph", 0) if ultima_lectura else 0
+        temperatura_actual = ultima_lectura.get("temperatura_agua", 0) if ultima_lectura else 0
+        ocupantes_actual = ultima_lectura.get("numero_usuarios", 0) if ultima_lectura else 0
+
+        # 🔹 Volumen diario = suma de lecturas de hoy
+        volumen_diario = sum(float(l.get("volumen_agua", 0)) for l in lecturas_salida)
+
+        # 🔹 Datos para gráfico de 1 mes (pH vs turbidez)
+        hace_un_mes = hoy - timedelta(days=30)
+        lecturas_mes = [l for l in lecturas_data if l.get("timestamp") and datetime.fromisoformat(l["timestamp"]).date() >= hace_un_mes]
+        for l in lecturas_mes:
+            fecha = datetime.fromisoformat(l["timestamp"]).strftime("%d/%m")
+            ph_data.append(float(l.get("ph", 0)))
+            turbidez_data.append(float(l.get("turbidez", 0)))
+            fechas_mes.append(fecha)
+
+        # 🔹 Historial diario (últimos 7 días)
+        historial_diario = []
+
+        for l in lecturas_hoy:
+            fecha = datetime.fromisoformat(l["timestamp"]).strftime("%d-%m-%Y")
+            historial_diario.append({
+                "fecha": fecha,
+                "ph": l.get("ph", 0),
+                "turbidez": l.get("turbidez", 0),
+                "od": l.get("od", 0),
+                "ocupantes": l.get("numero_usuarios", 0),
+            })
+
+    print("\n=== 🔍 Debug: lecturas_data ===")
+    print(f"Total registros recibidos: {len(lecturas_data)}")
+    if lecturas_data:
+        print("Ejemplo primer registro:", lecturas_data[0])
+        print("El ultimo registro:", ultima_lectura)
+
+
+    print("\n=== 🔍 Debug: eficiencia_data ===")
+    print(f"Total registros recibidos: {len(eficiencia_data)}")
+    if eficiencia_data:
+        print("Ejemplo primer registro:", eficiencia_data[0])
+        
+        
+
+    def color_por_eficiencia(valor):
+        if valor >= 85:
+            return "#34f041cc"  # verde
+        elif valor >= 75:
+            return "#f0c419cc"  # amarillo
+        else:
+            return "#f04334cc"  # rojo
+
+    if isinstance(eficiencia_data, list) and eficiencia_data:
+        registros_por_dia = OrderedDict()
+        for reg in eficiencia_data:
+            try:
+                fecha_obj = datetime.strptime(reg["timestamp"], "%Y-%m-%dT%H:%M:%S")
+            except (ValueError, KeyError):
+                continue
+            fecha_dia = fecha_obj.date().isoformat()
+            registros_por_dia.setdefault(fecha_dia, reg)
+
+        registros_filtrados = list(registros_por_dia.values())
+        ultimo_registro = registros_filtrados[0]
+
+        try:
+            ultima_revision = datetime.strptime(ultimo_registro["timestamp"], "%Y-%m-%dT%H:%M:%S")\
+                               .strftime("%d/%m/%Y %H:%M")
+        except (ValueError, KeyError):
+            ultima_revision = ultimo_registro.get("timestamp", "-")
+
+        cumple_norma = bool(ultimo_registro.get("cumple_norma"))
+        estado_agua = "Cumple Norma" if cumple_norma else "No Cumple Norma"
+        cumple_norma_color = "#2eed64e8" if cumple_norma else "#f04334e8"
+
+        biofiltros_nombres = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
+        biofiltros = {nombre: ultimo_registro.get(f"eficiencia_bf{i+1}_turbidez") 
+                      for i, nombre in enumerate(biofiltros_nombres)}
+
+        biofiltros_fallando = [n for n, v in biofiltros.items() if v is None]
+        estado_biofiltro = "Funcionando" if not biofiltros_fallando else f"No Funcionando ({', '.join(biofiltros_fallando)})"
+
+        plantas_validas = [(n, float(v)) for n, v in biofiltros.items() if v is not None]
+        planta_eficiente = min(plantas_validas, key=lambda x: x[1])[0] if plantas_validas else "-"
+
+        eficiencia_plantas = [
+            {"nombre": nombre, "valor": float(valor), "color": color_por_eficiencia(float(valor))}
+            for nombre, valor in biofiltros.items() if valor is not None
+        ]
+
+        etiquetas, valores, colores = [], [], []
+        for reg in reversed(registros_filtrados):
+            try:
+                fecha = datetime.strptime(reg["timestamp"][:10], "%Y-%m-%d").strftime("%d/%m")
+            except (ValueError, KeyError):
+                continue
+            etiquetas.append(fecha)
+            valores.append(float(reg.get("eficiencia_turbidez_global", 0)))
+            colores.append("rgba(46, 237, 100, 0.8)" if reg.get("cumple_norma") else "rgba(240, 67, 52, 0.8)")
+
+        # 🔍 prints para ver qué tenemos
+        print("\n=== Último registro ===")
+        print(ultimo_registro)
+        print("\n=== Eficiencia Plantas ===")
+        for e in eficiencia_plantas:
+            print(e)
+        print("\n=== Datos gráfico ===")
+        print("Etiquetas:", etiquetas)
+        print("Valores:", valores)
+
+    else:
+        ultimo_registro = None
+        estado_agua = estado_biofiltro = planta_eficiente = "Sin datos"
+        cumple_norma = False
+        cumple_norma_color = "#cccccc"
+        eficiencia_plantas = []
+        etiquetas = valores = colores = []
+        ultima_revision = "-"
+
+    contexto = {
+        "eficiencia_data": eficiencia_data,
+        "estado_agua": estado_agua,
+        "ultima_revision": ultima_revision,
+        "estado_biofiltro": estado_biofiltro,
+        "planta_eficiente": planta_eficiente,
+        "cumple_norma": "Sí" if cumple_norma else "No",
+        "cumple_norma_color": cumple_norma_color,
+        "eficiencia_plantas": eficiencia_plantas,
+        "ph_actual": ph_actual,
+        "temperatura_actual": temperatura_actual,
+        "volumen_diario": volumen_diario,
+        "ocupantes_actual": ocupantes_actual,
+        "historial_diario": historial_diario,
+        "ph_chart_labels": fechas_mes,
+        "ph_chart_data": ph_data,
+        "turbidez_chart_data": turbidez_data,
+        "chart_labels": etiquetas,
+        "chart_data": valores,
+        "chart_colors": colores,
+    }
+
+    print("\n=== Contexto final ===")
+    for k, v in contexto.items():
+        if isinstance(v, list):
+            print(f"{k}: {len(v)} elementos")
+        else:
+            print(f"{k}: {v}")
+
+    return render(request, "principal/analista.html", contexto)
 
 def sensors_view(request):
-    return render(request, 'principal/sensors.html')
+    lecturas_data = api_principal.get_lecturas() or []
+
+    hoy = datetime.now().date()
+    lecturas_hoy = [l for l in lecturas_data if datetime.fromisoformat(l["timestamp"]).date() == hoy]
+
+    if lecturas_hoy:
+        ultima_lectura = max(lecturas_hoy, key=lambda x: x.get("id", 0))
+        ph_actual = ultima_lectura.get("ph", 0)
+        temperatura_actual = ultima_lectura.get("temperatura_agua", 0)
+        turbidez_actual = ultima_lectura.get("turbidez", 0)
+    else:
+        ph_actual = temperatura_actual = turbidez_actual = 0
+
+    # Determinar color según rangos
+    def color_ph(ph):
+        if 6.5 <= ph <= 8.5:
+            return "text-green-600", "Dentro del rango"
+        elif 6 <= ph < 6.5 or 8.5 < ph <= 9:
+            return "text-yellow-500", "Cercano al límite"
+        else:
+            return "text-red-600", "Fuera de rango"
+
+    def color_temp(temp):
+        if 20 <= temp <= 28:
+            return "text-green-600", "Normal"
+        elif 18 <= temp < 20 or 28 < temp <= 30:
+            return "text-yellow-500", "Levemente fuera"
+        else:
+            return "text-red-600", "Fuera de rango"
+
+    def color_turbidez(turb):
+        if turb <= 10:
+            return "text-green-600", "Normal"
+        elif 10 < turb <= 15:
+            return "text-yellow-500", "Levemente alta"
+        else:
+            return "text-red-600", "Alta"
+
+    ph_color, ph_estado = color_ph(ph_actual)
+    temp_color, temp_estado = color_temp(temperatura_actual)
+    turb_color, turb_estado = color_turbidez(turbidez_actual)
+
+    contexto = {
+        "ph_actual": ph_actual,
+        "ph_color": ph_color,
+        "ph_estado": ph_estado,
+        "temperatura_actual": temperatura_actual,
+        "temp_color": temp_color,
+        "temp_estado": temp_estado,
+        "turbidez_actual": turbidez_actual,
+        "turb_color": turb_color,
+        "turb_estado": turb_estado,
+    }
+
+    return render(request, 'principal/sensors.html', contexto)
+
 
 def biofilters_view(request):
-    return render(request, 'principal/biofilters.html')
+    lecturas_data = api_principal.get_eficiencia() or []
+
+    # Tomamos los últimos 7 días
+    hoy = datetime.today().date()
+    semana_pasada = hoy - timedelta(days=6)
+
+    # Agrupamos por biofiltro
+    biofiltros = ["Biofiltro A", "Biofiltro B", "Biofiltro C"]
+    eficiencia_acumulada = defaultdict(list)
+
+    for l in lecturas_data:
+        try:
+            fecha = datetime.fromisoformat(l["timestamp"]).date()
+        except (ValueError, KeyError):
+            continue
+        if semana_pasada <= fecha <= hoy:
+            for i, nombre in enumerate(biofiltros):
+                valor = l.get(f"eficiencia_bf{i+1}_turbidez")
+                if valor is not None:
+                    eficiencia_acumulada[nombre].append(float(valor))
+
+    # Calculamos promedio semanal
+    eficiencia_promedio = []
+    for nombre in biofiltros:
+        valores = eficiencia_acumulada.get(nombre, [])
+        promedio = round(sum(valores)/len(valores),1) if valores else 0
+        # Color según eficiencia
+        if promedio >= 85:
+            color = "#34f041"  # verde
+        elif promedio >= 75:
+            color = "#f0c419"  # amarillo
+        else:
+            color = "#f04334"  # rojo
+        eficiencia_promedio.append({"nombre": nombre, "promedio": promedio, "color": color})
+
+    # Determinar el biofiltro más eficiente
+    if eficiencia_promedio:
+        biofiltro_top = max(eficiencia_promedio, key=lambda x: x["promedio"])
+    else:
+        biofiltro_top = {"nombre": "-", "promedio": 0, "color": "#ccc"}
+
+    contexto = {
+        "eficiencia_promedio": eficiencia_promedio,
+        "biofiltro_top": biofiltro_top,
+    }
+    return render(request, 'principal/biofilters.html', contexto)
+
 
 def analysis_view(request):
-    return render(request, 'principal/analysis.html')
+    lecturas_data = api_principal.get_lecturas() or []
+    eficiencia_data = api_principal.get_eficiencia() or []
+
+    # Inicializamos variables
+    ph_data, volumen_data, od_data, fechas_semana = [], [], [], []
+    pie_labels, pie_values, pie_colors = [], [], []
+
+    hoy = datetime.now().date()
+    hace_siete_dias = hoy - timedelta(days=6)
+
+    # Agrupar lecturas por día y calcular promedio diario
+    promedios_diarios = defaultdict(lambda: {"ph":0, "volumen":0, "od":0, "count":0})
+    for l in lecturas_data:
+        ts = l.get("timestamp")
+        if not ts:
+            continue
+        fecha = datetime.fromisoformat(ts).date()
+        if fecha < hace_siete_dias:
+            continue
+        promedios_diarios[fecha]["ph"] += float(l.get("ph", 0))
+        promedios_diarios[fecha]["volumen"] += float(l.get("volumen_agua", 0))
+        promedios_diarios[fecha]["od"] += float(l.get("od", 0))
+        promedios_diarios[fecha]["count"] += 1
+
+    # Diccionario de nombres de días en español
+    dias_es = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
+
+    # Crear listas finales para el gráfico
+    for i in range(7):
+        dia = hace_siete_dias + timedelta(days=i)
+        datos = promedios_diarios.get(dia)
+        fechas_semana.append(dias_es[dia.weekday()])
+        if datos and datos["count"] > 0:
+            ph_data.append(round(datos["ph"]/datos["count"],2))
+            volumen_data.append(round(datos["volumen"]/datos["count"],2))
+            od_data.append(round(datos["od"]/datos["count"],2))
+        else:
+            ph_data.append(0)
+            volumen_data.append(0)
+            od_data.append(0)
+
+    # Pie chart biofiltros según última eficiencia
+    if isinstance(eficiencia_data, list) and eficiencia_data:
+        ultima_eficiencia = max(eficiencia_data, key=lambda x: x.get("id", 0))
+        biofiltros_nombres = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
+        biofiltros = [
+            (nombre, float(ultima_eficiencia.get(f"eficiencia_bf{i+1}_turbidez", 0)))
+            for i, nombre in enumerate(biofiltros_nombres)
+        ]
+        pie_labels = [b[0] for b in biofiltros]
+        pie_values = [b[1] for b in biofiltros]
+        pie_colors = ['#34D399','#FBBF24','#60A5FA']
+
+    contexto = {
+        "ph_chart_labels": fechas_semana,
+        "ph_chart_data": ph_data,
+        "volume_chart_data": volumen_data,
+        "od_chart_data": od_data,
+        "pie_chart_labels": pie_labels,
+        "pie_chart_data": pie_values,
+        "pie_chart_colors": pie_colors,
+    }
+
+    return render(request, "principal/analysis.html", contexto)
 
 def history_view(request):
-    return render(request, 'principal/history.html')
+    """
+    Historial: gráficos de pH y volumen del último mes + tabla resumen semanal
+    """
+    lecturas_data = api_principal.get_lecturas() or []
+
+    hoy = datetime.now().date()
+    hace_un_mes = hoy - timedelta(days=30)
+
+    # Filtramos lecturas del último mes
+    lecturas_mes = [
+        l for l in lecturas_data
+        if l.get("timestamp") and datetime.fromisoformat(l["timestamp"]).date() >= hace_un_mes
+    ]
+
+    lecturas_mes.sort(key=lambda x: x.get("timestamp", ""))
+
+    # Datos para gráficos diarios
+    ph_data, volumen_data, dias_labels = [], [], []
+
+    for l in lecturas_mes:
+        fecha = datetime.fromisoformat(l["timestamp"]).strftime("%d/%m")
+        dias_labels.append(fecha)
+        ph_data.append(float(l.get("ph", 0)))
+        volumen_data.append(float(l.get("volumen_agua", 0)))
+
+    # Datos para resumen semanal
+    semanas = defaultdict(list)
+    for l in lecturas_mes:
+        fecha_obj = datetime.fromisoformat(l["timestamp"]).date()
+        semana_num = fecha_obj.isocalendar()[1]  # número de semana ISO
+        semanas[semana_num].append(l)
+
+    resumen_semanal = []
+    for semana, lecturas in sorted(semanas.items()):
+        if not lecturas:
+            continue
+        ph_prom = round(sum(float(l.get("ph",0)) for l in lecturas)/len(lecturas),2)
+        vol_prom = round(sum(float(l.get("volumen_agua",0)) for l in lecturas)/len(lecturas),2)
+        od_prom = round(sum(float(l.get("od",0)) for l in lecturas)/len(lecturas),2)
+        resumen_semanal.append({
+            "semana": f"Semana {semana}",
+            "ph_promedio": ph_prom,
+            "volumen_promedio": vol_prom,
+            "od_promedio": od_prom
+        })
+
+    contexto = {
+        "ph_history_labels": dias_labels,
+        "ph_history_data": ph_data,
+        "volume_history_data": volumen_data,
+        "resumen_semanal": resumen_semanal
+    }
+
+    return render(request, 'principal/history.html', contexto)
+
 
 def predictions_view(request):
     return render(request, 'principal/predictions.html')

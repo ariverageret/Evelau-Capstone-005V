@@ -52,23 +52,24 @@
                 <p class="text-gray-500 text-sm">Monitoreo en tiempo real de todos los sensores del sistema.</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Sensor pH -->
                     <div class="bg-white shadow rounded-lg p-4 flex flex-col items-center">
                         <span class="text-xl font-bold">⚗️ pH</span>
-                        <span class="text-3xl font-bold text-green-600 mt-2">7.2</span>
-                        <p class="text-gray-500 text-xs mt-1">Dentro del rango</p>
+                        <span class="text-3xl font-bold {{ ph_color }} mt-2">{{ ph_actual }}</span>
+                        <p class="text-gray-500 text-xs mt-1">{{ ph_estado }}</p>
                     </div>
+
                     <!-- Sensor Temperatura -->
                     <div class="bg-white shadow rounded-lg p-4 flex flex-col items-center">
                         <span class="text-xl font-bold">🌡️ Temperatura</span>
-                        <span class="text-3xl font-bold text-green-600 mt-2">22.5°C</span>
-                        <p class="text-gray-500 text-xs mt-1">Normal</p>
+                        <span class="text-3xl font-bold {{ temp_color }} mt-2">{{ temperatura_actual }}°C</span>
+                        <p class="text-gray-500 text-xs mt-1">{{ temp_estado }}</p>
                     </div>
+
                     <!-- Sensor Turbidez -->
                     <div class="bg-white shadow rounded-lg p-4 flex flex-col items-center">
                         <span class="text-xl font-bold">💧 Turbidez</span>
-                        <span class="text-3xl font-bold text-green-600 mt-2">5 NTU</span>
-                        <p class="text-gray-500 text-xs mt-1">Normal</p>
+                        <span class="text-3xl font-bold {{ turb_color }} mt-2">{{ turbidez_actual }} NTU</span>
+                        <p class="text-gray-500 text-xs mt-1">{{ turb_estado }}</p>
                     </div>
                 </div>
 

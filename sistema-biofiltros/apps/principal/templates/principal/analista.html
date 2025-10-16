@@ -62,7 +62,7 @@
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
                         <span class="text-2xl">⚗️</span>
                         <span class="text-gray-500 text-sm">pH Actual</span>
-                        <span class="text-2xl font-bold">7.2</span>
+                        <span class="text-2xl font-bold">{{ ph_actual|default:"-" }}</span>
                         <span class="text-green-500 text-xs mt-1">Dentro de rango</span>
                     </div>
 
@@ -70,7 +70,7 @@
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
                         <span class="text-2xl">🌡️</span>
                         <span class="text-gray-500 text-sm">Temperatura</span>
-                        <span class="text-2xl font-bold">22.5 °C</span>
+                        <span class="text-2xl font-bold">{{ temperatura_actual|floatformat:1 }} °C</span>
                         <span class="text-green-500 text-xs mt-1">+0.3°C vs promedio</span>
                     </div>
 
@@ -78,7 +78,7 @@
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
                         <span class="text-2xl">💦</span>
                         <span class="text-gray-500 text-sm">Volumen Diario</span>
-                        <span class="text-2xl font-bold">1250 L</span>
+                        <span class="text-2xl font-bold">{{ volumen_diario|floatformat:0 }} L</span>
                         <span class="text-green-500 text-xs mt-1">+5% vs ayer</span>
                     </div>
 
@@ -86,7 +86,7 @@
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
                         <span class="text-2xl">👥</span>
                         <span class="text-gray-500 text-sm">Ocupantes</span>
-                        <span class="text-2xl font-bold">4</span>
+                        <span class="text-2xl font-bold">{{ ocupantes_actual|default:"-" }}</span>
                         <span class="text-gray-500 text-xs mt-1">Sin cambios</span>
                     </div>
                 </div>
@@ -104,38 +104,38 @@
                 </div>
 
                 <!-- Historial resumido -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h3 class="font-bold mb-2">Historial Diario 📜</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full table-auto text-sm">
-                            <thead>
-                                <tr class="bg-gray-200">
-                                    <th class="px-4 py-2">Fecha</th>
-                                    <th class="px-4 py-2">pH</th>
-                                    <th class="px-4 py-2">Turbidez</th>
-                                    <th class="px-4 py-2">OD</th>
-                                    <th class="px-4 py-2">Ocupantes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b">
-                                    <td class="px-4 py-2">09-10-2025</td>
-                                    <td class="px-4 py-2">7.2</td>
-                                    <td class="px-4 py-2">8</td>
-                                    <td class="px-4 py-2">6</td>
-                                    <td class="px-4 py-2">4</td>
-                                </tr>
-                                <tr class="border-b">
-                                    <td class="px-4 py-2">08-10-2025</td>
-                                    <td class="px-4 py-2">7.1</td>
-                                    <td class="px-4 py-2">7</td>
-                                    <td class="px-4 py-2">5.8</td>
-                                    <td class="px-4 py-2">4</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="bg-white rounded-lg shadow p-4">
+    <h3 class="font-bold mb-2">Historial Diario 📜</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto text-sm">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="px-4 py-2 text-center">Fecha</th>
+                    <th class="px-4 py-2 text-center">pH</th>
+                    <th class="px-4 py-2 text-center">Turbidez</th>
+                    <th class="px-4 py-2 text-center">OD</th>
+                    <th class="px-4 py-2 text-center">Ocupantes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in historial_diario %}
+                <tr class="border-b text-center">
+                    <td class="px-4 py-2">{{ item.fecha }}</td>
+                    <td class="px-4 py-2">{{ item.ph }}</td>
+                    <td class="px-4 py-2">{{ item.turbidez }}</td>
+                    <td class="px-4 py-2">{{ item.od }}</td>
+                    <td class="px-4 py-2">{{ item.ocupantes }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-gray-400 py-4">Sin datos recientes</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
             </div>
 
@@ -149,47 +149,112 @@
     </div>
 </div>
 
-<!-- Scripts Chart.js -->
 <script>
+    const chartLabels = {{ chart_labels|safe }};
+    const chartData = {{ chart_data|safe }};
+    const chartColors = {{ chart_colors|safe }};
+    const eficienciaPlantas = {{ eficiencia_plantas|safe }};
+    const estadoAguaColor = "{{ cumple_norma_color }}";
+    const estadoAguaTexto = "{{ estado_agua }}";
+    const ultimaRevision = "{{ ultima_revision }}";
+
+    console.log("📊 Labels:", chartLabels);
+    console.log("📊 Data:", chartData);
+    console.log("📊 Plantas:", eficienciaPlantas);
+
+    // === Actualizar tarjeta semáforo ===
+    const semaforo = document.querySelector('.bg-white.rounded-lg.shadow.p-4.flex.flex-col.items-center');
+    if (semaforo) {
+        const colorCircle = semaforo.querySelector('span[style]');
+        const estadoTexto = semaforo.querySelector('.text-2xl.font-bold.mt-1');
+        const fechaTexto = semaforo.querySelector('.text-gray-500.text-xs.mt-1');
+
+        if (colorCircle) colorCircle.style.backgroundColor = estadoAguaColor;
+        if (estadoTexto) {
+            estadoTexto.textContent = estadoAguaTexto === "Cumple Norma" ? "Apta" : "No Apta";
+            estadoTexto.classList.toggle("text-green-500", estadoAguaTexto === "Cumple Norma");
+            estadoTexto.classList.toggle("text-red-500", estadoAguaTexto !== "Cumple Norma");
+        }
+        if (fechaTexto) fechaTexto.textContent = `Última revisión: ${ultimaRevision}`;
+    }
+
+    // === Gráfico 1: Eficiencia global (turbidez) ===
+    const phLabels = {{ ph_chart_labels|safe }};
+    const phData = {{ ph_chart_data|safe }};
+    const turbidezData = {{ turbidez_chart_data|safe }};
+
     const ctxPhTurbidez = document.getElementById('chartPhTurbidez').getContext('2d');
     new Chart(ctxPhTurbidez, {
         type: 'line',
         data: {
-            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes'],
+            labels: phLabels,
             datasets: [
                 {
                     label: 'pH',
-                    data: [7.0,7.1,7.2,7.3,7.2],
-                    borderColor: 'rgb(59, 130, 246)',
-                    backgroundColor: 'rgba(59, 130, 246,0.2)',
+                    data: phData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.2)',
+                    yAxisID: 'y',
                     tension: 0.4
                 },
                 {
-                    label: 'Turbidez',
-                    data: [9,8,7,8,8],
-                    borderColor: 'rgb(34,197,94)',
-                    backgroundColor: 'rgba(34,197,94,0.2)',
+                    label: 'Turbidez (NTU)',
+                    data: turbidezData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.2)',
+                    yAxisID: 'y1',
                     tension: 0.4
                 }
             ]
         },
-        options: { responsive:true, plugins:{ legend:{ position:'bottom' } } }
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'pH' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Turbidez (NTU)' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
     });
 
+    // === Gráfico 2: Eficiencia por Biofiltro ===
     const ctxOD = document.getElementById('chartOD').getContext('2d');
+    const labelsPlantas = eficienciaPlantas.map(p => p.nombre);
+    const valoresPlantas = eficienciaPlantas.map(p => p.valor);
+    const coloresPlantas = eficienciaPlantas.map(p => p.color);
+
     new Chart(ctxOD, {
         type: 'bar',
         data: {
-            labels: ['Biofiltro A','Biofiltro B','Biofiltro C'],
+            labels: labelsPlantas,
             datasets: [{
-                label: 'OD',
-                data: [5.2,5.5,6.0],
-                backgroundColor: ['#fbbf24','#f59e0b','#f97316']
+                label: 'Eficiencia (%)',
+                data: valoresPlantas,
+                backgroundColor: coloresPlantas,
+                borderRadius: 8
             }]
         },
-        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 100,
+                    title: { display: true, text: 'Eficiencia (%)' }
+                }
+            }
+        }
     });
 </script>
-
 </body>
 </html>

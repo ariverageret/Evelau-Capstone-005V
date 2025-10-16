@@ -49,51 +49,52 @@
             <!-- Contenido de Análisis -->
             <div class="space-y-6">
 
-                <h2 class="text-2xl font-bold flex items-center gap-2">🔬 Análisis</h2>
-                <p class="text-gray-500 text-sm">Gráficos y estadísticas para comprender el comportamiento del sistema.</p>
+                <h2 class="text-2xl font-bold flex items-center gap-2 justify-center">🔬 Análisis</h2>
+                <p class="text-gray-500 text-sm text-center">Gráficos y estadísticas para comprender el comportamiento del sistema.</p>
 
                 <!-- Contenedor horizontal de gráficos -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                     <!-- pH promedio semanal -->
                     <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">⚗️ pH promedio semanal</h3>
-                        <div class="w-full h-64">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg justify-center">⚗️ pH promedio semanal</h3>
+                        <div class="h-64 flex justify-center items-center">
                             <canvas id="phChart"></canvas>
                         </div>
-                        <p class="text-gray-500 text-xs mt-2">Valores promedio de pH diarios. ✅ Dentro de rango saludable, ❌ fuera del rango.</p>
+                        <p class="text-gray-500 text-xs mt-2 text-center">Valores promedio de pH diarios. ✅ Dentro de rango saludable, ❌ fuera del rango.</p>
                     </div>
 
                     <!-- Volumen diario de tratamiento -->
                     <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">💦 Volumen diario de tratamiento</h3>
-                        <div class="w-full h-64">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg justify-center">💦 Volumen diario de tratamiento</h3>
+                        <div class="h-64 flex justify-center items-center">
                             <canvas id="volumeChart"></canvas>
                         </div>
-                        <p class="text-gray-500 text-xs mt-2">Cantidad de agua tratada cada día. 🔹 Más alto = mejor rendimiento.</p>
+                        <p class="text-gray-500 text-xs mt-2 text-center">Cantidad de agua tratada cada día. 🔹 Más alto = mejor rendimiento.</p>
                     </div>
 
                     <!-- Oxígeno disuelto -->
                     <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">🧪 Oxígeno disuelto (OD)</h3>
-                        <div class="w-full h-64">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg justify-center">🧪 Oxígeno disuelto (OD)</h3>
+                        <div class="h-64 flex justify-center items-center">
                             <canvas id="odChart"></canvas>
                         </div>
-                        <p class="text-gray-500 text-xs mt-2">Concentración de oxígeno disuelto. Valores verdes ✅ indican niveles adecuados.</p>
+                        <p class="text-gray-500 text-xs mt-2 text-center">Concentración de oxígeno disuelto. Valores verdes ✅ indican niveles adecuados.</p>
                     </div>
 
                     <!-- Gráfico de torta -->
                     <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg">📊 Proporción de Biofiltros eficientes</h3>
-                        <div class="w-full h-64">
+                        <h3 class="font-semibold mb-2 flex items-center gap-2 text-lg justify-center">📊 Proporción de Biofiltros eficientes</h3>
+                        <div class="h-64 flex justify-center items-center">
                             <canvas id="pieChart"></canvas>
                         </div>
-                        <p class="text-gray-500 text-xs mt-2">Comparación de eficiencia de los biofiltros. 💧 Mejor rendimiento = más alto en el gráfico.</p>
+                        <p class="text-gray-500 text-xs mt-2 text-center">Comparación de eficiencia de los biofiltros. 💧 Mejor rendimiento = más alto en el gráfico.</p>
                     </div>
 
                 </div>
 
             </div>
+
 
         </main>
 
@@ -105,73 +106,99 @@
     </div>
 </div>
 
-<!-- Scripts Chart.js -->
 <script>
-    // Gráfico pH
-    const phCtx = document.getElementById('phChart').getContext('2d');
-    new Chart(phCtx, {
-        type: 'line',
-        data: {
-            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],
-            datasets: [{
-                label: 'pH',
-                data: [7.0,7.1,7.2,7.3,7.2,7.1,7.2],
-                borderColor: 'rgb(59,130,246)',
-                backgroundColor: 'rgba(59,130,246,0.2)',
-                tension: 0.4
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:14} } } } }
-    });
+const phCtx = document.getElementById('phChart').getContext('2d');
+const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+const odCtx = document.getElementById('odChart').getContext('2d');
+const pieCtx = document.getElementById('pieChart').getContext('2d');
 
-    // Gráfico volumen
-    const volumeCtx = document.getElementById('volumeChart').getContext('2d');
-    new Chart(volumeCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],
-            datasets: [{
-                label: 'Volumen (L)',
-                data: [1200,1250,1300,1280,1275,1320,1310],
-                backgroundColor: 'rgba(34,197,94,0.6)',
-                borderColor: 'rgb(34,197,94)',
-                borderWidth: 1
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-    });
+const phChart = new Chart(phCtx, {
+    type: 'line',
+    data: {
+        labels: {{ ph_chart_labels|safe }},
+        datasets: [{
+            label: 'pH',
+            data: {{ ph_chart_data|safe }},
+            borderColor: 'rgb(59,130,246)',
+            backgroundColor: 'rgba(59,130,246,0.2)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
 
-    // Gráfico OD
-    const odCtx = document.getElementById('odChart').getContext('2d');
-    new Chart(odCtx, {
-        type: 'line',
-        data: {
-            labels: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],
-            datasets: [{
-                label: 'OD (mg/L)',
-                data: [6,5.8,6.1,5.9,6,6.2,6],
-                borderColor: 'rgb(34,197,94)',
-                backgroundColor: 'rgba(34,197,94,0.2)',
-                tension: 0.3
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:14} } } } }
-    });
+const volumeChart = new Chart(volumeCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ ph_chart_labels|safe }},
+        datasets: [{
+            label: 'Volumen (L)',
+            data: {{ volume_chart_data|safe }},
+            backgroundColor: 'rgba(34,197,94,0.6)',
+            borderColor: 'rgb(34,197,94)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
 
-    // Gráfico de torta
-    const pieCtx = document.getElementById('pieChart').getContext('2d');
-    new Chart(pieCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Biofiltro A', 'Biofiltro B', 'Biofiltro C'],
-            datasets: [{
-                label: 'Eficiencia (%)',
-                data: [90,85,95],
-                backgroundColor: ['#34D399','#FBBF24','#60A5FA']
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:14} } } } }
-    });
+const odChart = new Chart(odCtx, {
+    type: 'line',
+    data: {
+        labels: {{ ph_chart_labels|safe }},
+        datasets: [{
+            label: 'OD (mg/L)',
+            data: {{ od_chart_data|safe }},
+            borderColor: 'rgb(34,197,94)',
+            backgroundColor: 'rgba(34,197,94,0.2)',
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 14 } }
+            }
+        }
+    }
+});
+
+const pieChart = new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ pie_chart_labels|safe }},
+        datasets: [{
+            label: 'Eficiencia (%)',
+            data: {{ pie_chart_data|safe }},
+            backgroundColor: {{ pie_chart_colors|safe }}
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 14 } }
+            }
+        }
+    }
+});
 </script>
 
 </body>

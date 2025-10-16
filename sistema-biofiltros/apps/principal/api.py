@@ -17,3 +17,14 @@ class APIClient:
         if response.status_code == 200:
             return data
         return {"error": data}
+    
+    def get_lecturas(self):
+        url = f"{self.base_url}/lecturas-sensores/lecturas-sensores?skip=0&limit=200"
+        response = requests.get(url)
+        try:
+            data = response.json()
+        except ValueError:
+            return {"error": f"Respuesta inválida del servidor: {response.text}"}
+        if response.status_code == 200:
+            return data
+        return {"error": data}

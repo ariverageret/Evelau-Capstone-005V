@@ -60,65 +60,82 @@
 
           </div>
 
-          <!-- Gráficos para admin -->
+          <!-- Gráficos -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <!-- Gráfico de sensores -->
-            <div class="bg-white rounded-xl shadow-lg p-4 h-72 flex flex-col">
+            <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col h-80">
               <h3 class="text-gray-700 font-semibold mb-2 text-center">Actividad de Sensores</h3>
               <canvas id="chartSensores" class="flex-1"></canvas>
             </div>
 
-            <!-- Gráfico de alertas -->
-            <div class="bg-white rounded-xl shadow-lg p-4 h-72 flex flex-col">
+            <!-- Gráfico de alertas por planta -->
+            <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col h-80">
               <h3 class="text-gray-700 font-semibold mb-2 text-center">Alertas por Planta</h3>
               <canvas id="chartAlertas" class="flex-1"></canvas>
             </div>
 
           </div>
-
-        </div>
       </main>
     </div>
 
     {% include 'footer.html' %}
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      // Gráfico de sensores
-      const ctxSensores = document.getElementById('chartSensores').getContext('2d');
-      new Chart(ctxSensores, {
-        type: 'line',
-        data: {
-          labels: {{ historial_sensores|safe }},
-          datasets: [{
-            label: 'Sensores Activos',
-            data: {{ valores_sensores|safe }},
-            backgroundColor: '#34f04144',
-            borderColor: '#34f041',
-            borderWidth: 2
-          }]
-        },
-        options: { responsive: true }
-      });
+  <script>
+  const ctxSensores = document.getElementById('chartSensores').getContext('2d');
+  new Chart(ctxSensores, {
+    type: 'line',
+    data: {
+      labels: {{ sensores_labels|safe }},
+      datasets: [{
+        label: 'Sensores Activos (%)',
+        data: {{ sensores_data|safe }},
+        borderColor: '#34f041',
+        backgroundColor: 'rgba(52, 240, 65, 0.2)',
+        borderWidth: 2,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom', // leyenda dentro de la tarjeta
+          labels: { font: { size: 14 }, color: '#4B5563' }
+        }
+      },
+      layout: { padding: { bottom: 20 } } // espacio para la leyenda
+    }
+  });
 
-      // Gráfico de alertas
-      const ctxAlertas = document.getElementById('chartAlertas').getContext('2d');
-      new Chart(ctxAlertas, {
-        type: 'bar',
-        data: {
-          labels: {{ plantas_alertas|safe }},
-          datasets: [{
-            label: 'Alertas',
-            data: {{ valores_alertas|safe }},
-            backgroundColor: '#f87171',
-            borderWidth: 1
-          }]
-        },
-        options: { responsive: true }
-      });
-    </script>
+  // Gráfico de alertas por planta
+  const ctxAlertas = document.getElementById('chartAlertas').getContext('2d');
+  new Chart(ctxAlertas, {
+    type: 'bar',
+    data: {
+      labels: {{ plantas_labels|safe }},
+      datasets: [{
+        label: 'Alertas',
+        data: {{ alertas_data|safe }},
+        backgroundColor: '#f87171',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom', // leyenda dentro de la tarjeta
+          labels: { font: { size: 14 }, color: '#4B5563' }
+        }
+      },
+      layout: { padding: { bottom: 20 } }
+    }
+  });
+</script>
 
   </body>
 </html>
