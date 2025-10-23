@@ -9,8 +9,9 @@ import pytz
 
 from loguru import logger
 from app.services.scheduler import start_scheduler, scheduler
+from app.services.prediction_service import prediction_service 
 
-#from app.core.database import Base, engine
+#from app.core.database import Base, engine # Descomentar si usamos creación de tablas al inicio
 
 # Configurar logging
 configure_logging()
@@ -19,6 +20,13 @@ configure_logging()
 async def lifespan(app: FastAPI):
     # Código que se ejecuta al iniciar la aplicación
     logger.info("Iniciando aplicación...")
+
+    # Verificar si el modelo de predicción se cargó correctamente al inicio
+    if prediction_service.pipeline is None:
+        logger.warning("El modelo de predicción NO se cargó correctamente al inicio.")
+    else:
+        logger.info("Modelo de predicción cargado y listo.")
+
     start_scheduler()
     
     yield
@@ -27,7 +35,9 @@ async def lifespan(app: FastAPI):
     logger.info("Deteniendo aplicación...")
     if scheduler.running:
         scheduler.shutdown()
-    logger.info("Scheduler detenido.")
+        logger.info("Scheduler detenido.")
+    else:
+        logger.info("Scheduler no estaba corriendo.")
 
 # Crear aplicación FastAPI
 app = FastAPI(
@@ -39,10 +49,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-@app.on_event("startup")
-def startup_event():
-    # Inicia el scheduler cuando la aplicación FastAPI arranca
-    start_scheduler()
+#@app.on_event("startup")
+#def startup_event():
+#    # Inicia el scheduler cuando la aplicación FastAPI arranca
+#    start_scheduler()
 
 # Incluir routers
 app.include_router(api_router, prefix=settings.API_V1_STR)

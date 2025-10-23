@@ -37,11 +37,14 @@ def start_scheduler():
     Inicia el scheduler y añade todos los trabajos.
     """
     # Job de simulación: se ejecuta en el minuto 0 de cada hora
-    scheduler.add_job(job_simular_lecturas, 'cron', hour='*', minute='0')
+    #scheduler.add_job(job_simular_lecturas, 'cron', hour='*', minute='0') # Oficial
+
+    scheduler.add_job(job_simular_lecturas, 'cron', minute='*/2') # Test
     
     # Job de cálculo: se ejecuta 15 minutos después
     intervalo = settings.SCHEDULER_INTERVAL_MINUTES
-    scheduler.add_job(job_calcular_eficiencia, 'cron', minute=f'*/{intervalo}')
+    #scheduler.add_job(job_calcular_eficiencia, 'cron', minute=f'*/{intervalo}') # Oficial
+    scheduler.add_job(job_calcular_eficiencia, 'cron', minute='*/1') # Test
     
     try:
         scheduler.start()
