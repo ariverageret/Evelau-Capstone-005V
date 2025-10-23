@@ -38,4 +38,40 @@ severidad ENUM('baja','media','alta','critica') DEFAULT 'media',
 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE biofiltros (
+  id INT PRIMARY KEY,
+  nombre_biofiltro VARCHAR(50),
+  especie_vegetal VARCHAR(100),
+  fecha_inicio DATE
+);
+
+CREATE TABLE lecturas_sensores (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  timestamp DATETIME,
+  punto_muestreo ENUM('entrada', 'salida_biofiltro') NOT NULL,
+  biofiltro_id INT NULL,
+  od DECIMAL(4,2),
+  ph DECIMAL(3,1),
+  conductividad INT,
+  solidos_solubles INT,
+  turbidez INT,
+  volumen_agua INT,
+  numero_usuarios TINYINT,
+  temperatura_agua DECIMAL(3,1),
+  computed_eficiencia BOOLEAN
+);
+
+CREATE TABLE eficiencia_instantanea (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  timestamp DATETIME,
+  eficiencia_od_global DECIMAL(5,2),
+  eficiencia_turbidez_global DECIMAL(5,2),
+  eficiencia_bf1_turbidez DECIMAL(5,2),
+  eficiencia_bf2_turbidez DECIMAL(5,2),
+  eficiencia_bf3_turbidez DECIMAL(5,2),
+  cumple_norma BOOLEAN
+);
+
+
+
 
