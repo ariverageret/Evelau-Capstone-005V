@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from loguru import logger
 
-from app.models.sensor import LecturaSensor # Asegúrate que la importación sea correcta
+from app.models.sensor import LecturaSensor 
 
 def generar_lecturas_simuladas(db: Session):
     """
@@ -20,6 +20,7 @@ def generar_lecturas_simuladas(db: Session):
     # La turbidez y conductividad aumentan con el número de usuarios
     turbidez_entrada = random.randint(120, 180) + (numero_usuarios * 5)
     conductividad_entrada = random.randint(1500, 2200) + (numero_usuarios * 20)
+    sst_entrada = random.randint(150, 350) + (numero_usuarios * 20) 
     
     # El OD inicial es bajo en aguas grises
     od_entrada = round(random.uniform(1.0, 2.5), 2)
@@ -32,7 +33,7 @@ def generar_lecturas_simuladas(db: Session):
         od=od_entrada,
         ph=ph_entrada,
         conductividad=conductividad_entrada,
-        solidos_solubles=int(conductividad_entrada * 0.65), # Estimación
+        sst=sst_entrada,
         turbidez=turbidez_entrada,
         volumen_agua=random.randint(80, 150),
         numero_usuarios=numero_usuarios,
@@ -40,36 +41,57 @@ def generar_lecturas_simuladas(db: Session):
         computed_eficiencia=False # Siempre se crea como no procesada
     )
     
-    logger.debug(f"Lectura de ENTRADA simulada: Turbidez={turbidez_entrada}, OD={od_entrada}")
+    logger.debug(f"ENTRADA simulada: Turbidez={turbidez_entrada}, SST={sst_entrada}")
 
     # --- 2. Simular el efecto de "limpieza" de los 3 biofiltros para la SALIDA ---
     lecturas_salida = []
+    
+    # Definir los factores de reducción una sola vez para este ciclo
+    factor_reduccion_turbidez = random.uniform(0.05, 0.20) # Remueve entre el 80% y 95%
+    factor_reduccion_conductividad = random.uniform(0.55, 0.70)
+    
+    # --- Factor de reducción específico para SST ---
+    # El biofiltro debería tener una alta tasa de remoción de sólidos.
+    factor_reduccion_sst = random.uniform(0.05, 0.15) # Remueve entre el 85% y 95% 
+    
+    factor_aumento_od = random.uniform(2.5, 3.5)
+    
+    # Lógica secuencial para la simulación
+    valor_actual = {
+        'turbidez': turbidez_entrada,
+        'sst': sst_entrada
+    }
+
     for i in range(1, 4): # Para biofiltros con id 1, 2, y 3
-        # Cada biofiltro tiene una "personalidad" o eficiencia ligeramente diferente
-        factor_reduccion_turbidez = random.uniform(0.10, 0.20) # Remueve entre el 80% y 90%
-        factor_reduccion_conductividad = random.uniform(0.55, 0.70)
-        factor_aumento_od = random.uniform(2.5, 3.5)
+        
+        # Simulación de la salida de la etapa actual
+        turbidez_salida = int(valor_actual['turbidez'] * factor_reduccion_turbidez * random.uniform(0.9, 1.1))
+        sst_salida = int(valor_actual['sst'] * factor_reduccion_sst * random.uniform(0.9, 1.1))
         
         # Ajustar pH hacia la neutralidad
-        ph_salida = ph_entrada + random.uniform(0.3, 0.8)
-        ph_salida = min(ph_salida, 8.5) # Asegurar que no exceda límites lógicos
+        ph_salida = ph_entrada + (i * random.uniform(0.2, 0.4)) # El pH sube un poco en cada etapa
+        ph_salida = min(ph_salida, 8.5)
         
         lectura_salida = LecturaSensor(
-            timestamp=datetime.now(), # Mismo timestamp que la entrada para agruparlas
+            timestamp=datetime.now(),
             punto_muestreo='salida_biofiltro',
             biofiltro_id=i,
-            od=round(od_entrada + factor_aumento_od + random.uniform(-0.3, 0.3), 2),
+            od=round(od_entrada + (i * factor_aumento_od / 2.5) + random.uniform(-0.3, 0.3), 2),
             ph=round(ph_salida, 1),
-            conductividad=int(conductividad_entrada * factor_reduccion_conductividad),
-            solidos_solubles=int((conductividad_entrada * factor_reduccion_conductividad) * 0.65),
-            turbidez=int(turbidez_entrada * factor_reduccion_turbidez),
-            volumen_agua=int(lectura_entrada.volumen_agua * 0.95), # Pequeña pérdida
+            conductividad=int(conductividad_entrada * (factor_reduccion_conductividad + (i*0.05))), # Mejora un poco en cada etapa
+            sst=max(5, sst_salida), # Asegura un mínimo
+            turbidez=max(2, turbidez_salida), # Asegura un mínimo
+            volumen_agua=int(lectura_entrada.volumen_agua * (1 - (i*0.02))),
             numero_usuarios=numero_usuarios,
-            temperatura_agua=round(temperatura_agua - random.uniform(0.5, 1.5), 1),
+            temperatura_agua=round(temperatura_agua - (i*0.5), 1),
             computed_eficiencia=False
         )
         lecturas_salida.append(lectura_salida)
-        logger.debug(f"Lectura de SALIDA simulada para Biofiltro {i}: Turbidez={lectura_salida.turbidez}, OD={lectura_salida.od}")
+        logger.debug(f"SALIDA simulada (Etapa {i}): Turbidez={lectura_salida.turbidez}, SST={lectura_salida.sst}")
+        
+        # La salida de esta etapa es la entrada de la siguiente
+        valor_actual['turbidez'] = lectura_salida.turbidez
+        valor_actual['sst'] = lectura_salida.sst
 
     # --- 3. Guardar todas las lecturas en la base de datos ---
     try:

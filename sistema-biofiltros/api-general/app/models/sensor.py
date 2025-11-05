@@ -17,7 +17,7 @@ class LecturaSensor(Base):
     od = Column(Numeric(4, 2), nullable=True)
     ph = Column(Numeric(3, 1), nullable=True)
     conductividad = Column(Integer, nullable=True)
-    solidos_solubles = Column(Integer, nullable=True)
+    sst = Column(Integer, nullable=True)
     turbidez = Column(Integer, nullable=True)
     volumen_agua = Column(Integer, nullable=True)
     numero_usuarios = Column(TINYINT, nullable=True)

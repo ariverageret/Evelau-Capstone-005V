@@ -40,9 +40,10 @@ class Settings(BaseSettings):
     # ---------------------- UMBRALES NORMATIVOS (NCh 1333) ----------------------
     NORMA_PH_MIN: float = 6.5
     NORMA_PH_MAX: float = 8.5
-    NORMA_CONDUCTIVIDAD_MAX: int = 2000  # µS/cm
-    NORMA_TURBIDEZ_MAX: int = 5         # NTU
-    NORMA_OD_MIN: int = 2               # mg/L
+    NORMA_CONDUCTIVIDAD_MAX: int = 2000
+    NORMA_TURBIDEZ_MAX: int = 5
+    NORMA_OD_MIN: int = 2
+    NORMA_SST_MAX: int = 30  
 
     # ---------------------- CONFIGURACIÓN DE ENVIRONMENTS ----------------------
     class Config:
