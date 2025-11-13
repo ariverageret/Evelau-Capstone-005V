@@ -15,7 +15,8 @@ class LecturaSensorBase(BaseModel):
     numero_usuarios: Optional[int] = None
     temperatura_agua: Optional[float] = None
     computed_eficiencia: bool = False
-
+    sst: Optional[int] = None  
+    
 class LecturaSensorCreate(LecturaSensorBase):
     pass
 

@@ -6,6 +6,8 @@ from datetime import date, datetime, timedelta
 from django.contrib import messages
 from collections import OrderedDict, defaultdict
 import random
+import json
+import os
 
 
 api = APIClient()
@@ -36,17 +38,122 @@ def principal_home(request):
     usuarios_activos = len([u for u in users if u.get('estado', '').lower() == 'activo'])
     usuarios_inactivos = len([u for u in users if u.get('estado', '').lower() != 'activo'])
     analistas_activos = len([u for u in users if u.get('estado', '').lower() == 'activo' and u.get('rol', '').lower() == 'analista'])
+    
+    
+    registros_lecturas = api_principal.get_lecturas() or []
 
-    # 🔹 Datos inventados para alertas y gráficos
-    alertas_recientes = random.randint(0, 10)  # número de alertas recientes
 
-    # Actividad de sensores (últimos 7 días)
+    alertas_recientes = 0
+
+    if registros_lecturas:
+        hoy = datetime.now().date()
+        inicio_semana = hoy - timedelta(days=hoy.weekday())     # lunes
+        fin_semana = inicio_semana + timedelta(days=6)          # domingo
+
+        # Campos que deben revisarse
+        campos_revision = [
+            "ph", "turbidez", "od", "sst", 
+            "conductividad", 
+            "temperatura_agua", "volumen_agua"
+        ]
+
+        for reg in registros_lecturas:
+
+            # Convertimos timestamp a fecha
+            try:
+                fecha_reg = datetime.fromisoformat(reg["timestamp"]).date()
+            except:
+                continue
+
+            # Solo contar registros de esta semana
+            if not (inicio_semana <= fecha_reg <= fin_semana):
+                continue
+
+            punto = reg.get("punto_muestreo")
+            biofiltro_id = reg.get("biofiltro_id")
+
+            # --- Entrada nunca cuenta como alerta por biofiltro_id null ---
+            if punto == "entrada":
+                # pero si tiene otros campos importantes en null → alerta
+                if any(reg.get(c) is None for c in campos_revision):
+                    alertas_recientes += 1
+                continue
+
+            # --- Salida del biofiltro: no debe tener nada en NULL ---
+            if punto == "salida_biofiltro":
+                if any(reg.get(c) is None for c in campos_revision):
+                    alertas_recientes += 1
+                continue
+
+
     sensores_labels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-    sensores_data = [random.randint(80, 100) for _ in sensores_labels]  # % de actividad por día
+    sensores_data = [0, 0, 0, 0, 0, 0, 0]  
 
-    # Alertas por planta
+    if registros_lecturas:
+        hoy = datetime.now().date()
+        inicio_semana = hoy - timedelta(days=hoy.weekday())  
+        fin_semana = inicio_semana + timedelta(days=6)      
+
+        for reg in registros_lecturas:
+
+            # Convertimos fecha
+            try:
+                fecha_reg = datetime.fromisoformat(reg["timestamp"]).date()
+            except:
+                continue
+
+            # Solo datos de esta semana
+            if not (inicio_semana <= fecha_reg <= fin_semana):
+                continue
+
+            # Día de la semana (0=lunes, 6=domingo)
+            dia_idx = fecha_reg.weekday()
+
+            # Sumamos 1 lectura para ese día
+            sensores_data[dia_idx] += 1
+
+    alertas_por_planta = {1: 0, 2: 0, 3: 0}
+
+    if registros_lecturas:
+        hoy = datetime.now().date()
+        inicio_semana = hoy - timedelta(days=hoy.weekday())     # lunes
+        fin_semana = inicio_semana + timedelta(days=6)          # domingo
+
+        campos_revision = [
+            "ph", "turbidez", "od", "sst", 
+            "conductividad", 
+            "temperatura_agua", "volumen_agua"
+        ]
+
+        for reg in registros_lecturas:
+
+            # Convertir fecha
+            try:
+                fecha_reg = datetime.fromisoformat(reg["timestamp"]).date()
+            except:
+                continue
+
+            # Solo esta semana
+            if not (inicio_semana <= fecha_reg <= fin_semana):
+                continue
+
+            punto = reg.get("punto_muestreo")
+            bf_id = reg.get("biofiltro_id")
+
+            # Solo contar salidas del biofiltro 1-3
+            if punto == "salida_biofiltro" and bf_id in (1, 2, 3):
+
+                # ¿Falta un campo importante?
+                if any(reg.get(c) is None for c in campos_revision):
+                    alertas_por_planta[bf_id] += 1
+
+    # Convertir dict → lista en orden correcto
     plantas_labels = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
-    alertas_data = [random.randint(0, 5) for _ in plantas_labels]  # cantidad de alertas por planta
+    alertas_data = [
+        alertas_por_planta[1],
+        alertas_por_planta[2],
+        alertas_por_planta[3]
+    ]
 
     context = {
         "user": user_info,
@@ -161,47 +268,52 @@ def agricultor_view(request):
 
 def analista_dashboard(request):
     """
-    Dashboard del analista - reutiliza la lógica de agricultor_view
+    Dashboard del analista - versión modificada para usar TODAS las lecturas
     """
     eficiencia_data = api_principal.get_eficiencia() or []
     lecturas_data = api_principal.get_lecturas() or []
-    
+
     ph_actual = temperatura_actual = volumen_diario = ocupantes_actual = 0
     ph_data, turbidez_data, fechas_mes = [], [], []
+    historial_diario = []
 
+    # ============================
+    # 🔹 PROCESAMIENTO DE LECTURAS
+    # ============================
     if isinstance(lecturas_data, list) and lecturas_data:
-        hoy = datetime.now().date()
-        lecturas_hoy = [l for l in lecturas_data if l.get("timestamp", "").startswith(hoy.isoformat())]
-        
-        lecturas_salida = [l for l in lecturas_hoy if l.get("biofiltro_id") == 3]
 
-        # 🔹 Tomar la última por ID (más confiable que timestamp)
-        if lecturas_hoy:
-            ultima_lectura = max(lecturas_hoy, key=lambda x: x.get("id", 0))
-        else:
-            ultima_lectura = None
+        # 🔹 Lecturas filtradas para el biofiltro 3
+        lecturas_salida = [l for l in lecturas_data if l.get("biofiltro_id") == 3]
 
-        # 🔹 Extraer valores si existe la última lectura
-        ph_actual = ultima_lectura.get("ph", 0) if ultima_lectura else 0
-        temperatura_actual = ultima_lectura.get("temperatura_agua", 0) if ultima_lectura else 0
-        ocupantes_actual = ultima_lectura.get("numero_usuarios", 0) if ultima_lectura else 0
+        # 🔹 Última lectura GLOBAL (por ID)
+        ultima_lectura = max(lecturas_data, key=lambda x: x.get("id", 0))
 
-        # 🔹 Volumen diario = suma de lecturas de hoy
+        # 🔹 Extraer valores actuales
+        ph_actual = ultima_lectura.get("ph", 0)
+        temperatura_actual = ultima_lectura.get("temperatura_agua", 0)
+        ocupantes_actual = ultima_lectura.get("numero_usuarios", 0)
+
+        # 🔹 Volumen acumulado total del biofiltro
         volumen_diario = sum(float(l.get("volumen_agua", 0)) for l in lecturas_salida)
 
-        # 🔹 Datos para gráfico de 1 mes (pH vs turbidez)
+        # 🔹 Datos del último mes para gráficos de pH y turbidez
+        hoy = datetime.now().date()
         hace_un_mes = hoy - timedelta(days=30)
-        lecturas_mes = [l for l in lecturas_data if l.get("timestamp") and datetime.fromisoformat(l["timestamp"]).date() >= hace_un_mes]
+
+        lecturas_mes = [
+            l for l in lecturas_data
+            if l.get("timestamp")
+            and datetime.fromisoformat(l["timestamp"]).date() >= hace_un_mes
+        ]
+
         for l in lecturas_mes:
             fecha = datetime.fromisoformat(l["timestamp"]).strftime("%d/%m")
             ph_data.append(float(l.get("ph", 0)))
             turbidez_data.append(float(l.get("turbidez", 0)))
             fechas_mes.append(fecha)
 
-        # 🔹 Historial diario (últimos 7 días)
-        historial_diario = []
-
-        for l in lecturas_hoy:
+        # 🔹 Historial completo (todas las lecturas)
+        for l in lecturas_data:
             fecha = datetime.fromisoformat(l["timestamp"]).strftime("%d-%m-%Y")
             historial_diario.append({
                 "fecha": fecha,
@@ -211,20 +323,9 @@ def analista_dashboard(request):
                 "ocupantes": l.get("numero_usuarios", 0),
             })
 
-    print("\n=== 🔍 Debug: lecturas_data ===")
-    print(f"Total registros recibidos: {len(lecturas_data)}")
-    if lecturas_data:
-        print("Ejemplo primer registro:", lecturas_data[0])
-        print("El ultimo registro:", ultima_lectura)
-
-
-    print("\n=== 🔍 Debug: eficiencia_data ===")
-    print(f"Total registros recibidos: {len(eficiencia_data)}")
-    if eficiencia_data:
-        print("Ejemplo primer registro:", eficiencia_data[0])
-        
-        
-
+    # ============================
+    # 🔹 PROCESAMIENTO DE EFICIENCIA
+    # ============================
     def color_por_eficiencia(valor):
         if valor >= 85:
             return "#34f041cc"  # verde
@@ -234,21 +335,27 @@ def analista_dashboard(request):
             return "#f04334cc"  # rojo
 
     if isinstance(eficiencia_data, list) and eficiencia_data:
+
         registros_por_dia = OrderedDict()
+
         for reg in eficiencia_data:
             try:
                 fecha_obj = datetime.strptime(reg["timestamp"], "%Y-%m-%dT%H:%M:%S")
             except (ValueError, KeyError):
                 continue
+
             fecha_dia = fecha_obj.date().isoformat()
             registros_por_dia.setdefault(fecha_dia, reg)
 
         registros_filtrados = list(registros_por_dia.values())
+
+        # Último registro válido
         ultimo_registro = registros_filtrados[0]
 
         try:
-            ultima_revision = datetime.strptime(ultimo_registro["timestamp"], "%Y-%m-%dT%H:%M:%S")\
-                               .strftime("%d/%m/%Y %H:%M")
+            ultima_revision = datetime.strptime(
+                ultimo_registro["timestamp"], "%Y-%m-%dT%H:%M:%S"
+            ).strftime("%d/%m/%Y %H:%M")
         except (ValueError, KeyError):
             ultima_revision = ultimo_registro.get("timestamp", "-")
 
@@ -256,40 +363,46 @@ def analista_dashboard(request):
         estado_agua = "Cumple Norma" if cumple_norma else "No Cumple Norma"
         cumple_norma_color = "#2eed64e8" if cumple_norma else "#f04334e8"
 
+        # Eficiencia por biofiltro
         biofiltros_nombres = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
-        biofiltros = {nombre: ultimo_registro.get(f"eficiencia_bf{i+1}_turbidez") 
-                      for i, nombre in enumerate(biofiltros_nombres)}
+        biofiltros = {
+            nombre: ultimo_registro.get(f"eficiencia_bf{i+1}_turbidez")
+            for i, nombre in enumerate(biofiltros_nombres)
+        }
 
         biofiltros_fallando = [n for n, v in biofiltros.items() if v is None]
-        estado_biofiltro = "Funcionando" if not biofiltros_fallando else f"No Funcionando ({', '.join(biofiltros_fallando)})"
+        estado_biofiltro = (
+            "Funcionando"
+            if not biofiltros_fallando
+            else f"No Funcionando ({', '.join(biofiltros_fallando)})"
+        )
 
         plantas_validas = [(n, float(v)) for n, v in biofiltros.items() if v is not None]
-        planta_eficiente = min(plantas_validas, key=lambda x: x[1])[0] if plantas_validas else "-"
+        planta_eficiente = (
+            min(plantas_validas, key=lambda x: x[1])[0] if plantas_validas else "-"
+        )
 
         eficiencia_plantas = [
             {"nombre": nombre, "valor": float(valor), "color": color_por_eficiencia(float(valor))}
-            for nombre, valor in biofiltros.items() if valor is not None
+            for nombre, valor in biofiltros.items()
+            if valor is not None
         ]
 
         etiquetas, valores, colores = [], [], []
+
         for reg in reversed(registros_filtrados):
             try:
                 fecha = datetime.strptime(reg["timestamp"][:10], "%Y-%m-%d").strftime("%d/%m")
             except (ValueError, KeyError):
                 continue
+
             etiquetas.append(fecha)
             valores.append(float(reg.get("eficiencia_turbidez_global", 0)))
-            colores.append("rgba(46, 237, 100, 0.8)" if reg.get("cumple_norma") else "rgba(240, 67, 52, 0.8)")
-
-        # 🔍 prints para ver qué tenemos
-        print("\n=== Último registro ===")
-        print(ultimo_registro)
-        print("\n=== Eficiencia Plantas ===")
-        for e in eficiencia_plantas:
-            print(e)
-        print("\n=== Datos gráfico ===")
-        print("Etiquetas:", etiquetas)
-        print("Valores:", valores)
+            colores.append(
+                "rgba(46, 237, 100, 0.8)"
+                if reg.get("cumple_norma")
+                else "rgba(240, 67, 52, 0.8)"
+            )
 
     else:
         ultimo_registro = None
@@ -300,6 +413,9 @@ def analista_dashboard(request):
         etiquetas = valores = colores = []
         ultima_revision = "-"
 
+    # ============================
+    # 🔹 CONTEXTO FINAL PARA LA VISTA
+    # ============================
     contexto = {
         "eficiencia_data": eficiencia_data,
         "estado_agua": estado_agua,
@@ -309,11 +425,17 @@ def analista_dashboard(request):
         "cumple_norma": "Sí" if cumple_norma else "No",
         "cumple_norma_color": cumple_norma_color,
         "eficiencia_plantas": eficiencia_plantas,
+
+        # Datos de lecturas
         "ph_actual": ph_actual,
         "temperatura_actual": temperatura_actual,
         "volumen_diario": volumen_diario,
         "ocupantes_actual": ocupantes_actual,
+
+        # Historial
         "historial_diario": historial_diario,
+
+        # Gráficos
         "ph_chart_labels": fechas_mes,
         "ph_chart_data": ph_data,
         "turbidez_chart_data": turbidez_data,
@@ -321,13 +443,6 @@ def analista_dashboard(request):
         "chart_data": valores,
         "chart_colors": colores,
     }
-
-    print("\n=== Contexto final ===")
-    for k, v in contexto.items():
-        if isinstance(v, list):
-            print(f"{k}: {len(v)} elementos")
-        else:
-            print(f"{k}: {v}")
 
     return render(request, "principal/analista.html", contexto)
 
@@ -396,45 +511,70 @@ def biofilters_view(request):
     hoy = datetime.today().date()
     semana_pasada = hoy - timedelta(days=6)
 
-    # Agrupamos por biofiltro
     biofiltros = ["Biofiltro A", "Biofiltro B", "Biofiltro C"]
     eficiencia_acumulada = defaultdict(list)
 
+    # === 1️⃣ Recopilar valores de eficiencia por biofiltro ===
     for l in lecturas_data:
         try:
             fecha = datetime.fromisoformat(l["timestamp"]).date()
         except (ValueError, KeyError):
             continue
+
         if semana_pasada <= fecha <= hoy:
             for i, nombre in enumerate(biofiltros):
                 valor = l.get(f"eficiencia_bf{i+1}_turbidez")
                 if valor is not None:
                     eficiencia_acumulada[nombre].append(float(valor))
 
-    # Calculamos promedio semanal
+    # === 2️⃣ Calcular promedio semanal ===
     eficiencia_promedio = []
     for nombre in biofiltros:
         valores = eficiencia_acumulada.get(nombre, [])
-        promedio = round(sum(valores)/len(valores),1) if valores else 0
-        # Color según eficiencia
-        if promedio >= 85:
-            color = "#34f041"  # verde
-        elif promedio >= 75:
-            color = "#f0c419"  # amarillo
-        else:
-            color = "#f04334"  # rojo
-        eficiencia_promedio.append({"nombre": nombre, "promedio": promedio, "color": color})
+        promedio = round(sum(valores) / len(valores), 2) if valores else 0
+        eficiencia_promedio.append({"nombre": nombre, "promedio": promedio})
 
-    # Determinar el biofiltro más eficiente
-    if eficiencia_promedio:
-        biofiltro_top = max(eficiencia_promedio, key=lambda x: x["promedio"])
-    else:
-        biofiltro_top = {"nombre": "-", "promedio": 0, "color": "#ccc"}
+    # === 3️⃣ Calcular bajadas reales entre plantas ===
+    # Ejemplo: [92.48, 80.00, 0.00] → bajadas = [7.52, 12.48, 80]
+    valores = [p["promedio"] for p in eficiencia_promedio]
+    bajadas = []
+
+    for i, valor in enumerate(valores):
+        if i == 0:
+            bajada = round(100 - valor, 2)
+        else:
+            bajada = round(valores[i-1] - valor, 2)
+        bajadas.append(bajada)
+
+    # Insertar bajada en cada estructura
+    for i, bf in enumerate(eficiencia_promedio):
+        bf["bajada"] = bajadas[i]
+
+    # === 4️⃣ Ordenar por mejor bajada REAL ===
+    eficiencia_ordenada = sorted(eficiencia_promedio, key=lambda x: x["bajada"], reverse=True)
+
+    # === 5️⃣ Asignar color según ranking ===
+    for i, bf in enumerate(eficiencia_ordenada):
+        if i == 0:
+            bf["color_rank"] = "#22c55e"   # 🟩 mejor
+        elif i == 1:
+            bf["color_rank"] = "#eab308"   # 🟨 segundo
+        else:
+            bf["color_rank"] = "#ef4444"   # 🟥 peor
+
+    # === 6️⃣ El mejor biofiltro ahora es según bajada real ===
+    biofiltro_top = eficiencia_ordenada[0] if eficiencia_ordenada else {
+        "nombre": "-",
+        "promedio": 0,
+        "bajada": 0,
+        "color_rank": "#ccc"
+    }
 
     contexto = {
-        "eficiencia_promedio": eficiencia_promedio,
+        "eficiencia_promedio": eficiencia_ordenada,
         "biofiltro_top": biofiltro_top,
     }
+
     return render(request, 'principal/biofilters.html', contexto)
 
 
@@ -449,7 +589,7 @@ def analysis_view(request):
     hoy = datetime.now().date()
     hace_siete_dias = hoy - timedelta(days=6)
 
-    # Agrupar lecturas por día y calcular promedio diario
+    # Agrupar lecturas por día
     promedios_diarios = defaultdict(lambda: {"ph":0, "volumen":0, "od":0, "count":0})
     for l in lecturas_data:
         ts = l.get("timestamp")
@@ -463,10 +603,10 @@ def analysis_view(request):
         promedios_diarios[fecha]["od"] += float(l.get("od", 0))
         promedios_diarios[fecha]["count"] += 1
 
-    # Diccionario de nombres de días en español
+    # Nombres de días
     dias_es = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
 
-    # Crear listas finales para el gráfico
+    # Crear listas
     for i in range(7):
         dia = hace_siete_dias + timedelta(days=i)
         datos = promedios_diarios.get(dia)
@@ -480,17 +620,37 @@ def analysis_view(request):
             volumen_data.append(0)
             od_data.append(0)
 
-    # Pie chart biofiltros según última eficiencia
+    # === NUEVO PIE CHART: BAJADAS REALES (MEJOR = MAYOR BAJADA) ===
     if isinstance(eficiencia_data, list) and eficiencia_data:
-        ultima_eficiencia = max(eficiencia_data, key=lambda x: x.get("id", 0))
-        biofiltros_nombres = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
-        biofiltros = [
-            (nombre, float(ultima_eficiencia.get(f"eficiencia_bf{i+1}_turbidez", 0)))
-            for i, nombre in enumerate(biofiltros_nombres)
+        ultima = max(eficiencia_data, key=lambda x: x.get("id", 0))
+
+        valores = [
+            float(ultima.get("eficiencia_bf1_turbidez", 0)),
+            float(ultima.get("eficiencia_bf2_turbidez", 0)),
+            float(ultima.get("eficiencia_bf3_turbidez", 0))
         ]
-        pie_labels = [b[0] for b in biofiltros]
-        pie_values = [b[1] for b in biofiltros]
-        pie_colors = ['#34D399','#FBBF24','#60A5FA']
+
+        nombres = ["Hierba del Sapo", "Carrizo Enano", "Papiro Enano"]
+
+        bajadas = [
+            round(100 - valores[0], 2),           # A
+            round(valores[0] - valores[1], 2),    # B
+            round(valores[1] - valores[2], 2)     # C
+        ]
+
+        # Ordenar para ranking visual
+        orden = sorted(
+            zip(nombres, bajadas),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        # Asignar colores según ranking
+        ranking_colors = ["#10B981", "#FBBF24", "#EF4444"]  # verde, amarillo, rojo
+
+        pie_labels = [o[0] for o in orden]
+        pie_values = [o[1] for o in orden]
+        pie_colors = ranking_colors[:len(orden)]
 
     contexto = {
         "ph_chart_labels": fechas_semana,
@@ -562,4 +722,73 @@ def history_view(request):
 
 
 def predictions_view(request):
-    return render(request, 'principal/predictions.html')
+    lecturas = api_principal.get_lecturas() or []
+    hoy = datetime.now().date()
+
+    # Filtrar solo lecturas de "entrada" del día actual
+    lecturas_entrada_hoy = [
+        l for l in lecturas
+        if l.get("punto_muestreo") == "entrada"
+        and l.get("timestamp")[:10] == hoy.isoformat()
+    ]
+
+    if not lecturas_entrada_hoy:
+        return render(request, 'principal/predictions.html', {
+            "error": "No hay lecturas de entrada registradas hoy."
+        })
+
+    # Tomar las últimas 10 lecturas
+    lecturas_entrada_hoy = sorted(lecturas_entrada_hoy, key=lambda x: x["timestamp"])[-10:]
+
+    resultados = []
+
+    for lectura in lecturas_entrada_hoy:
+        datos_envio = {
+            "conductividad_entrada": lectura.get("conductividad"),
+            "numero_usuarios": lectura.get("numero_usuarios"),
+            "od_entrada": lectura.get("od"),
+            "ph_entrada": lectura.get("ph"),
+            "sst": lectura.get("sst"),
+            "temperatura_agua": lectura.get("temperatura_agua"),
+            "turbidez_entrada": lectura.get("turbidez"),
+            "volumen_agua_entrada": lectura.get("volumen_agua"),
+        }
+
+        # print("\n=== 📤 Enviando datos de predicción ===")
+        # print(datos_envio)
+
+        resultado = api_principal.predicciones(datos_envio)
+
+        resultados.append({
+            "timestamp": lectura.get("timestamp"),
+            "datos": datos_envio,
+            "prediccion": resultado
+        })
+
+    # Guardar predicciones localmente (opcional)
+    archivo_predicciones = os.path.join("data", "predicciones.json")
+    os.makedirs("data", exist_ok=True)
+    with open(archivo_predicciones, "w", encoding="utf-8") as f:
+        json.dump(resultados, f, indent=4, ensure_ascii=False)
+
+    # print("\n✅ Predicciones guardadas en:", archivo_predicciones)
+
+    # Convertir listas a JSON válido antes de pasarlas al template
+    labels = json.dumps([r["timestamp"] for r in resultados])
+    prob_vals = json.dumps([
+        r["prediccion"].get("probabilidad_cumplimiento", 0)
+        if isinstance(r["prediccion"], dict) else 0
+        for r in resultados
+    ])
+    cumple_vals = json.dumps([
+        1 if isinstance(r["prediccion"], dict) and r["prediccion"].get("prediccion_cumple_norma") else 0
+        for r in resultados
+    ])
+
+    # Render del template
+    return render(request, 'principal/predictions.html', {
+        "resultados": resultados,
+        "labels": labels,
+        "prob_vals": prob_vals,
+        "cumple_vals": cumple_vals
+    })

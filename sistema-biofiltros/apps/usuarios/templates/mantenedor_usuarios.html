@@ -1,228 +1,243 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-  {% include 'head.html' %}
+{% include 'head.html' %}
 
 <body class="min-h-screen flex flex-col bg-cover bg-center relative"
       style="background-image: url('{% static 'login/fondo.jpg' %}');">
 
-  {% include 'header.html' %}
+    {% include 'header.html' %}
 
-  <div class="flex flex-1 overflow-hidden">
+<div class="flex flex-1 overflow-hidden">
 
     <!-- Sidebar -->
     {% include 'sidebar.html' %}
 
     <!-- Contenido principal -->
-    <main class="flex-1 p-6 overflow-y-auto">
-      <div class="max-w-6xl mx-auto">
+    <main class="flex-1 p-4 sm:p-6 overflow-y-auto w-full">
 
-        <!-- Encabezado -->
-        <div class="flex justify-between items-center mb-6">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
-            <p class="text-gray-500 text-lg">Administración y control de usuarios</p>
-          </div>
+        <div class="max-w-7xl mx-auto w-full">
+
+            <!-- Encabezado -->
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-2">
+                <div class="text-center sm:text-left">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
+                    <p class="text-gray-500 text-base sm:text-lg">Administración y control de usuarios</p>
+                </div>
+            </div>
+
+            <!-- Tarjetas de indicadores -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+
+                <div class="rounded-xl shadow-md p-4 text-center bg-green-200/60">
+                    <p class="text-4xl mb-1">👥</p>
+                    <p class="text-xl font-bold">Total Usuarios</p>
+                    <p class="text-lg font-semibold">{{ total_usuarios }}</p>
+                </div>
+
+                <div class="rounded-xl shadow-md p-4 text-center bg-teal-200/60">
+                    <p class="text-4xl mb-1">🟢</p>
+                    <p class="text-xl font-bold">Activos</p>
+                    <p class="text-lg font-semibold">{{ usuarios_activos }}</p>
+                </div>
+
+                <div class="rounded-xl shadow-md p-4 text-center bg-red-200/60">
+                    <p class="text-4xl mb-1">🔴</p>
+                    <p class="text-xl font-bold">Inactivos</p>
+                    <p class="text-lg font-semibold">{{ usuarios_inactivos }}</p>
+                </div>
+
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="flex flex-col sm:flex-row items-center mb-4 gap-2 w-full">
+                <input type="text" id="search" placeholder="Ingresar correo"
+                       class="border px-4 py-2 rounded w-full sm:flex-1 bg-white">
+                <button id="btn-buscar"
+                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 w-full sm:w-auto">
+                    Buscar
+                </button>
+            </div>
+
+            <!-- Tabla Responsive -->
+            <div class="bg-white/60 backdrop-blur-md rounded-xl shadow-lg overflow-x-auto mb-6 w-full">
+
+                <table class="min-w-full border border-gray-300 text-sm">
+
+                    <thead class="bg-teal-800 text-white text-left">
+                        <tr>
+                            <th class="px-4 py-2">Nombre</th>
+                            <th class="px-4 py-2">Correo</th>
+                            <th class="px-4 py-2">Password</th>
+                            <th class="px-4 py-2">Rol</th>
+                            <th class="px-4 py-2">Estado</th>
+                            <th class="px-4 py-2 text-center">Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-gray-200" id="user-table">
+                        {% for user in users %}
+                        <tr data-id="{{ user.id_usuario }}" data-rol="{{ user.rol|lower }}">
+                            <td class="px-4 py-2 whitespace-nowrap">{{ user.username }}</td>
+                            <td class="px-4 py-2 break-all">{{ user.email }}</td>
+                            <td class="px-4 py-2">*****</td>
+                            <td class="px-4 py-2">{{ user.rol }}</td>
+                            <td class="px-4 py-2">{{ user.estado }}</td>
+                            <td class="px-4 py-2 text-center space-x-1 sm:space-x-2">
+                                <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver text-xs sm:text-sm">Ver</button>
+                                <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar text-xs sm:text-sm">Modificar</button>
+                                <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar text-xs sm:text-sm">Eliminar</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-4 py-2 text-center">No hay usuarios</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- Formulario Responsive -->
+            <div class="flex justify-center mt-8 w-full">
+                <div class="p-6 bg-white/60 backdrop-blur-md rounded-xl shadow-lg space-y-4 w-full max-w-lg">
+
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">
+                        Agregar Usuario
+                    </h3>
+
+                    <form class="space-y-4" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="create_user" value="1">
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Nombre</label>
+                            <input type="text" name="username" class="w-full border px-3 py-2 rounded" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Correo</label>
+                            <input type="email" name="email" class="w-full border px-3 py-2 rounded" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Contraseña</label>
+                            <input type="password" name="password" class="w-full border px-3 py-2 rounded" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Rol</label>
+                            <select name="rol" class="w-full border px-3 py-2 rounded" required>
+                                <option value="">Selecciona un rol</option>
+                                {% for rol in roles %}
+                                <option value="{{ rol.nombre_rol }}">{{ rol.nombre_rol|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600 w-full">Guardar</button>
+                            <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300 w-full">Cancelar</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
         </div>
 
-        <!-- Tarjetas de indicadores (opcional) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div class="rounded-xl shadow-md p-4 text-center bg-green-200/60 flex flex-col justify-center">
-            <p class="text-4xl mb-1">👥</p>
-            <p class="text-xl font-bold">Total Usuarios</p>
-            <p class="text-lg font-semibold">{{ total_usuarios }}</p>
-          </div>
-          <div class="rounded-xl shadow-md p-4 text-center bg-teal-200/60 flex flex-col justify-center">
-            <p class="text-4xl mb-1">🟢</p>
-            <p class="text-xl font-bold">Activos</p>
-            <p class="text-lg font-semibold">{{ usuarios_activos }}</p>
-          </div>
-          <div class="rounded-xl shadow-md p-4 text-center bg-red-200/60 flex flex-col justify-center">
-            <p class="text-4xl mb-1">🔴</p>
-            <p class="text-xl font-bold">Inactivos</p>
-            <p class="text-lg font-semibold">{{ usuarios_inactivos }}</p>
-          </div>
-        </div>
-
-        <!-- Búsqueda -->
-        <div class="flex items-center mb-4 space-x-2">
-          <input type="text" id="search" placeholder="Ingresar correo" class="border px-4 py-2 rounded flex-1 bg-white">
-          <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" id="btn-buscar">Buscar</button>
-        </div>
-
-        <!-- Tabla de usuarios -->
-        <div class="bg-white/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden mb-6">
-          <table class="min-w-full border border-gray-300">
-            <thead class="bg-teal-800 text-white">
-              <tr>
-                <th class="px-4 py-2 text-left">Nombre</th>
-                <th class="px-4 py-2 text-left">Correo</th>
-                <th class="px-4 py-2 text-left">Password</th>
-                <th class="px-4 py-2 text-left">Rol</th>
-                <th class="px-4 py-2 text-left">Estado</th>
-                <th class="px-4 py-2 text-center">Acción</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200" id="user-table">
-              {% for user in users %}
-              <tr data-id="{{ user.id_usuario }}" data-rol="{{ user.rol|lower }}">
-                <td class="px-4 py-2">{{ user.username }}</td>
-                <td class="px-4 py-2">{{ user.email }}</td>
-                <td class="px-4 py-2">*****</td>
-                <td class="px-4 py-2">{{ user.rol }}</td>
-                <td class="px-4 py-2">{{ user.estado }}</td>
-                <td class="px-4 py-2 text-center space-x-2">
-                  <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 btn-ver">Ver</button>
-                  <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-400 btn-modificar">Modificar</button>
-                  <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-500 btn-eliminar">Eliminar</button>
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="6" class="px-4 py-2 text-center">No hay usuarios</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Formulario de agregar/editar -->
-        <div class="flex justify-center mt-8">
-          <div class="p-6 bg-white/40 backdrop-blur-md rounded-xl shadow-lg space-y-4 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-2 text-center" id="form-title">Agregar Usuario</h3>
-
-            <form class="space-y-4" method="POST">
-              {% csrf_token %}
-              <input type="hidden" name="create_user" value="1">
-
-              <div>
-                <label class="block text-gray-700 mb-1">Nombre</label>
-                <input type="text" name="username" class="w-full border px-3 py-2 rounded" placeholder="Nombre del usuario" required>
-              </div>
-
-              <div>
-                <label class="block text-gray-700 mb-1">Correo</label>
-                <input type="email" name="email" class="w-full border px-3 py-2 rounded" placeholder="Correo electrónico" required>
-              </div>
-
-              <div>
-                <label class="block text-gray-700 mb-1">Contraseña</label>
-                <input type="password" name="password" class="w-full border px-3 py-2 rounded" placeholder="Contraseña" required>
-              </div>
-
-              <div>
-                <label class="block text-gray-700 mb-1">Rol</label>
-                <select name="rol" class="w-full border px-3 py-2 rounded" required>
-                  <option value="">Selecciona un rol</option>
-                  {% for rol in roles %}
-                    <option value="{{ rol.nombre_rol }}">{{ rol.nombre_rol|capfirst }}</option>
-                  {% empty %}
-                    <option disabled>No hay roles disponibles</option>
-                  {% endfor %}
-                </select>
-              </div>
-
-              <div class="flex space-x-2">
-                <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-600">Guardar</button>
-                <button type="button" id="btn-cancelar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-      </div>
     </main>
-  </div>
 
-  {% include 'footer.html' %}
+</div>
 
-  <!-- SweetAlert para mensajes de Django -->
+{% include 'footer.html' %}
+
+<!-- SweetAlert mensajes -->
 <script>
-  {% if messages %}
-    {% for message in messages %}
-      Swal.fire({
-        icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
-        title: "{{ message|escapejs }}",
-        timer: 2500,
-        showConfirmButton: false
-      });
-    {% endfor %}
-  {% endif %}
+{% if messages %}
+{% for message in messages %}
+Swal.fire({
+    icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+    title: "{{ message|escapejs }}",
+    timer: 2500,
+    showConfirmButton: false
+});
+{% endfor %}
+{% endif %}
 </script>
-  <!-- JS para editar/eliminar usuarios -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const buttonsModificar = document.querySelectorAll(".btn-modificar");
-      const buttonsEliminar = document.querySelectorAll(".btn-eliminar");
-      const form = document.querySelector("form");
-      const title = document.getElementById("form-title");
-      const inputHidden = form.querySelector("input[name='create_user']");
-      const inputUserId = document.createElement("input");
-      inputUserId.type = "hidden";
-      inputUserId.name = "user_id";
 
-      buttonsModificar.forEach((btn) => {
+<!-- Script botones -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buttonsModificar = document.querySelectorAll(".btn-modificar");
+    const buttonsEliminar = document.querySelectorAll(".btn-eliminar");
+    const form = document.querySelector("form");
+    const title = document.getElementById("form-title");
+    const csrf = form.querySelector("[name=csrfmiddlewaretoken]");
+    const inputHidden = form.querySelector("input[name='create_user']");
+
+    const inputUserId = document.createElement("input");
+    inputUserId.type = "hidden";
+    inputUserId.name = "user_id";
+
+    buttonsModificar.forEach((btn) => {
         btn.addEventListener("click", function () {
-          const row = btn.closest("tr");
-          const nombre = row.children[0].textContent.trim();
-          const correo = row.children[1].textContent.trim();
-          const rol = row.children[3].textContent.trim();
+            const row = btn.closest("tr");
+            form.username.value = row.children[0].textContent.trim();
+            form.email.value = row.children[1].textContent.trim();
+            form.password.value = "";
+            form.password.required = false;
+            form.rol.value = row.children[3].textContent.trim();
 
-          inputUserId.value = row.dataset.id || "";
-          title.textContent = "Editar Usuario";
-          inputHidden.name = "edit_user";
-          form.appendChild(inputUserId);
+            inputHidden.name = "edit_user";
+            inputUserId.value = row.dataset.id;
+            form.appendChild(inputUserId);
 
-          form.username.value = nombre;
-          form.email.value = correo;
-          form.password.value = "";
-          form.password.required = false;
-          form.rol.value = rol;
-
-          form.scrollIntoView({ behavior: "smooth" });
+            title.textContent = "Editar Usuario";
+            form.scrollIntoView({ behavior: "smooth" });
         });
-      });
+    });
 
-      document.getElementById("btn-cancelar").addEventListener("click", function () {
-        title.textContent = "Agregar Usuario";
-        inputHidden.name = "create_user";
+    document.getElementById("btn-cancelar").addEventListener("click", () => {
         form.reset();
         if (inputUserId.parentNode) inputUserId.remove();
         form.password.required = true;
-      });
-
-      buttonsEliminar.forEach((btn) => {
-        btn.addEventListener("click", function () {
-          const row = btn.closest("tr");
-          const nombre = row.children[0].textContent.trim();
-          const id = row.dataset.id;
-
-          Swal.fire({
-            title: `Eliminar usuario "${nombre}"?`,
-            text: "Esta acción no se puede deshacer",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Sí, eliminar",
-            cancelButtonText: "Cancelar"
-          }).then((result) => {
-            if (result.isConfirmed) {
-              const formDelete = document.createElement("form");
-              formDelete.method = "POST";
-              formDelete.innerHTML = `
-                <input type="hidden" name="csrfmiddlewaretoken" value="${form.querySelector('[name=csrfmiddlewaretoken]').value}">
-                <input type="hidden" name="delete_user" value="1">
-                <input type="hidden" name="user_id" value="${id}">
-              `;
-              document.body.appendChild(formDelete);
-              formDelete.submit();
-            }
-          });
-        });
-      });
+        title.textContent = "Agregar Usuario";
+        inputHidden.name = "create_user";
     });
-  </script>
+
+    buttonsEliminar.forEach((btn) => {
+        btn.addEventListener("click", function () {
+            const row = btn.closest("tr");
+            Swal.fire({
+                title: `Eliminar usuario "${row.children[0].textContent}"?`,
+                text: "Esta acción no se puede deshacer",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar"
+            }).then((r) => {
+                if (r.isConfirmed) {
+                    const f = document.createElement("form");
+                    f.method = "POST";
+                    f.innerHTML = `
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf.value}">
+                        <input type="hidden" name="delete_user" value="1">
+                        <input type="hidden" name="user_id" value="${row.dataset.id}">
+                    `;
+                    document.body.appendChild(f);
+                    f.submit();
+                }
+            });
+        });
+    });
+
+});
+</script>
 
 </body>
 </html>

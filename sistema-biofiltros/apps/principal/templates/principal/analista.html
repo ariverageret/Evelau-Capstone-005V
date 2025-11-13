@@ -1,56 +1,57 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+    
 {% include 'head.html' %}
 
-<body class="min-h-screen flex flex-col bg-gray-50">
+<body class="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
 
     {% include 'header.html' %}
 
-    <div class="flex flex-1">
+    <div class="flex flex-1 overflow-x-hidden w-full">
 
         {% include 'sidebar.html' %}
 
     <!-- Contenedor principal -->
-    <div class="flex-1 flex flex-col min-h-screen">
+    <div class="flex-1 flex flex-col min-h-screen w-full max-w-full">
 
         <!-- Main Content -->
-        <main class="flex-1 container mx-auto px-6 py-6">
+        <main class="flex-1 container mx-auto px-4 sm:px-6 py-6 w-full max-w-full">
 
             <!-- Pestañas visuales con iconos + emojis -->
-            <div class="grid grid-cols-6 gap-2 mb-6 p-1">
-                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded bg-blue-200 hover:bg-blue-300">
-                    <span class="text-2xl">📊</span>
-                    <span class="text-sm font-bold">Resumen</span>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6 p-1 w-full">
+                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded bg-blue-200 hover:bg-blue-300 w-full">
+                    <span class="text-xl sm:text-2xl">📊</span>
+                    <span class="text-xs sm:text-sm font-bold">Resumen</span>
                 </a>
-                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded bg-green-200 hover:bg-green-300">
-                    <span class="text-2xl">🌡️</span>
-                    <span class="text-sm font-bold">Sensores</span>
+                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded bg-green-200 hover:bg-green-300 w-full">
+                    <span class="text-xl sm:text-2xl">🌡️</span>
+                    <span class="text-xs sm:text-sm font-bold">Sensores</span>
                 </a>
-                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded bg-yellow-200 hover:bg-yellow-300">
-                    <span class="text-2xl">💧</span>
-                    <span class="text-sm font-bold">Biofiltros</span>
+                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded bg-yellow-200 hover:bg-yellow-300 w-full">
+                    <span class="text-xl sm:text-2xl">💧</span>
+                    <span class="text-xs sm:text-sm font-bold">Biofiltros</span>
                 </a>
-                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded bg-purple-200 hover:bg-purple-300">
-                    <span class="text-2xl">🔬</span>
-                    <span class="text-sm font-bold">Análisis</span>
+                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded bg-purple-200 hover:bg-purple-300 w-full">
+                    <span class="text-xl sm:text-2xl">🔬</span>
+                    <span class="text-xs sm:text-sm font-bold">Análisis</span>
                 </a>
-                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200 hover:bg-red-300">
-                    <span class="text-2xl">📜</span>
-                    <span class="text-sm font-bold">Historial</span>
+                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200 hover:bg-red-300 w-full">
+                    <span class="text-xl sm:text-2xl">📜</span>
+                    <span class="text-xs sm:text-sm font-bold">Historial</span>
                 </a>
-                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded bg-indigo-200 hover:bg-indigo-300">
-                    <span class="text-2xl">🔮</span>
-                    <span class="text-sm font-bold">Predicciones</span>
+                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded bg-indigo-200 hover:bg-indigo-300 w-full">
+                    <span class="text-xl sm:text-2xl">🔮</span>
+                    <span class="text-xs sm:text-sm font-bold">Predicciones</span>
                 </a>
             </div>
 
             <!-- Dashboard Resumen -->
-            <div class="space-y-6">
+            <div class="space-y-6 w-full">
 
                 <!-- Tarjeta Semáforo Agua -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6 w-full">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">🚦</span>
                         <span class="text-gray-500 text-sm">Estado del Agua</span>
                         <span class="w-6 h-6 rounded-full mt-2" style="background-color: #34D399;"></span>
@@ -58,32 +59,28 @@
                         <span class="text-gray-500 text-xs mt-1">Última revisión: 09-10-2025 10:30</span>
                     </div>
 
-                    <!-- pH Actual -->
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">⚗️</span>
                         <span class="text-gray-500 text-sm">pH Actual</span>
                         <span class="text-2xl font-bold">{{ ph_actual|default:"-" }}</span>
                         <span class="text-green-500 text-xs mt-1">Dentro de rango</span>
                     </div>
 
-                    <!-- Temperatura -->
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">🌡️</span>
                         <span class="text-gray-500 text-sm">Temperatura</span>
                         <span class="text-2xl font-bold">{{ temperatura_actual|floatformat:1 }} °C</span>
                         <span class="text-green-500 text-xs mt-1">+0.3°C vs promedio</span>
                     </div>
 
-                    <!-- Volumen Diario -->
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">💦</span>
                         <span class="text-gray-500 text-sm">Volumen Diario</span>
-                        <span class="text-2xl font-bold">{{ volumen_diario|floatformat:0 }} L</span>
+                        <span class="text-2xl font-bold">{{ volumen_diario|floatformat:0 }} Litros</span>
                         <span class="text-green-500 text-xs mt-1">+5% vs ayer</span>
                     </div>
 
-                    <!-- Ocupantes -->
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">👥</span>
                         <span class="text-gray-500 text-sm">Ocupantes</span>
                         <span class="text-2xl font-bold">{{ ocupantes_actual|default:"-" }}</span>
@@ -92,49 +89,117 @@
                 </div>
 
                 <!-- Gráficos de tendencia -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 w-full">
+                    <div class="bg-white rounded-lg shadow p-4 w-full">
                         <h3 class="font-bold mb-2">Tendencia pH vs Turbidez</h3>
-                        <canvas id="chartPhTurbidez" class="h-48"></canvas>
+                        <div class="w-full h-48 sm:h-56 md:h-64">
+                            <canvas id="chartPhTurbidez" class="w-full h-full"></canvas>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-4">
+
+                    <div class="bg-white rounded-lg shadow p-4 w-full">
                         <h3 class="font-bold mb-2">OD / Eficiencia Biofiltros</h3>
-                        <canvas id="chartOD" class="h-48"></canvas>
+                        <div class="w-full h-48 sm:h-56 md:h-64">
+                            <canvas id="chartOD" class="w-full h-full"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Historial resumido -->
-<div class="bg-white rounded-lg shadow p-4">
-    <h3 class="font-bold mb-2">Historial Diario 📜</h3>
-    <div class="overflow-x-auto">
-        <table class="min-w-full table-auto text-sm">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="px-4 py-2 text-center">Fecha</th>
-                    <th class="px-4 py-2 text-center">pH</th>
-                    <th class="px-4 py-2 text-center">Turbidez</th>
-                    <th class="px-4 py-2 text-center">OD</th>
-                    <th class="px-4 py-2 text-center">Ocupantes</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in historial_diario %}
-                <tr class="border-b text-center">
-                    <td class="px-4 py-2">{{ item.fecha }}</td>
-                    <td class="px-4 py-2">{{ item.ph }}</td>
-                    <td class="px-4 py-2">{{ item.turbidez }}</td>
-                    <td class="px-4 py-2">{{ item.od }}</td>
-                    <td class="px-4 py-2">{{ item.ocupantes }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center text-gray-400 py-4">Sin datos recientes</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+                <div class="bg-white rounded-lg shadow p-4 w-full">
+                    <h3 class="font-bold mb-4">Historial Diario 📜</h3>
+
+                    <!-- Filtros -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4 text-sm">
+
+                        <!-- pH -->
+                        <div>
+                            <label class="font-semibold block">pH</label>
+                            <select id="phRange" class="w-full border border-gray-300 rounded px-2 py-1 mt-1">
+                                <option value="">Todos</option>
+                                <option value="0-4">0 - 4</option>
+                                <option value="4-6">4 - 6</option>
+                                <option value="6-7">6 - 7</option>
+                                <option value="7-8">7 - 8</option>
+                                <option value="8-14">8 - 14</option>
+                            </select>
+                        </div>
+
+                        <!-- Turbidez -->
+                        <div>
+                            <label class="font-semibold block">Turbidez (NTU)</label>
+                            <select id="turbRange" class="w-full border border-gray-300 rounded px-2 py-1 mt-1">
+                                <option value="">Todos</option>
+                                <option value="0-1">0 - 1</option>
+                                <option value="1-3">1 - 3</option>
+                                <option value="3-5">3 - 5</option>
+                                <option value="5-10">5 - 10</option>
+                                <option value="10-9999">10+</option>
+                            </select>
+                        </div>
+
+                        <!-- OD -->
+                        <div>
+                            <label class="font-semibold block">OD (mg/L)</label>
+                            <select id="odRange" class="w-full border border-gray-300 rounded px-2 py-1 mt-1">
+                                <option value="">Todos</option>
+                                <option value="0-2">0 - 2</option>
+                                <option value="2-4">2 - 4</option>
+                                <option value="4-6">4 - 6</option>
+                                <option value="6-8">6 - 8</option>
+                                <option value="8-9999">8+</option>
+                            </select>
+                        </div>
+
+                        <!-- Fecha -->
+                        <div>
+                            <label class="font-semibold block">Fecha (rango)</label>
+                            <div class="flex gap-2 mt-1">
+
+                                <input type="text" id="fechaMin"
+                                    placeholder="Desde (DD-MM-YYYY)"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+
+                                <input type="text" id="fechaMax"
+                                    placeholder="Hasta (DD-MM-YYYY)"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="overflow-x-auto w-full">
+                        <table id="tablaHistorial" class="min-w-full text-xs sm:text-sm display stripe hover">
+                            <thead class="bg-white border-b">
+                                <tr>
+                                    <th class="px-4 py-2 text-center font-semibold text-gray-700">Fecha</th>
+                                    <th class="px-4 py-2 text-center font-semibold text-gray-700">pH</th>
+                                    <th class="px-4 py-2 text-center font-semibold text-gray-700">Turbidez</th>
+                                    <th class="px-4 py-2 text-center font-semibold text-gray-700">OD</th>
+                                    <th class="px-4 py-2 text-center font-semibold text-gray-700">Ocupantes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in historial_diario %}
+                                <tr class="border-b">
+                                    <td class="px-4 py-2 text-center">{{ item.fecha }}</td>
+                                    <td class="px-4 py-2 text-center">{{ item.ph }}</td>
+                                    <td class="px-4 py-2 text-center">{{ item.turbidez }}</td>
+                                    <td class="px-4 py-2 text-center">{{ item.od }}</td>
+                                    <td class="px-4 py-2 text-center">{{ item.ocupantes }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-gray-400 py-4">Sin datos recientes</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
 
             </div>
@@ -142,7 +207,7 @@
         </main>
 
         <!-- Footer -->
-        <footer class="mt-auto">
+        <footer class="mt-auto w-full">
             {% include 'footer.html' %}
         </footer>
 
@@ -150,6 +215,147 @@
 </div>
 
 <script>
+flatpickr("#fechaMin", {
+    dateFormat: "d-m-Y",
+    maxDate: "today",
+    locale: {
+        firstDayOfWeek: 1
+    }
+});
+
+flatpickr("#fechaMax", {
+    dateFormat: "d-m-Y",
+    maxDate: "today",
+    locale: {
+        firstDayOfWeek: 1
+    }
+});
+$(document).ready(function () {
+
+    var tabla = $("#tablaHistorial").DataTable({
+        pageLength: 10,
+        responsive: true,
+        order: [[0, "desc"]],
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+        },
+
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '📥 Exportar Excel',
+                title: 'Historial_Diario',
+                className: 'btnExcel'
+            }
+        ],
+
+        createdRow: function(row, data, dataIndex){
+            $(row).css({
+                "background-color": "#ffffff",
+                "color": "#374151",
+                "text-align": "center"
+            });
+        },
+
+        headerCallback: function(thead) {
+            $(thead).find("th").css({
+                "background-color": "#ffffff",
+                "color": "#374151",
+                "font-weight": "600",
+                "border-bottom": "2px solid #e5e7eb",
+                "text-align": "center"
+            });
+        },
+
+        drawCallback: function(settings) {
+
+            $('.dataTables_paginate a').css({
+                "background-color": "#ffffff",
+                "color": "#374151",
+                "border": "1px solid #d1d5db",
+                "border-radius": "6px",
+                "padding": "4px 8px",
+                "margin": "2px"
+            });
+
+            $(".paginate_button.current").css({
+                "background-color": "#e5e7eb",
+                "color": "#111827",
+                "border": "1px solid #d1d5db"
+            });
+
+            $('.dataTables_length select').css({
+                "background-color": "#ffffff",
+                "color": "#374151",
+                "border": "1px solid #d1d5db",
+                "border-radius": "6px",
+                "padding": "4px 8px"
+            });
+
+            $('.dataTables_filter input').css({
+                "background-color": "#ffffff",
+                "color": "#374151",
+                "border": "1px solid #d1d5db",
+                "border-radius": "6px",
+                "padding": "4px 8px"
+            });
+
+            $('.btnExcel').css({
+                "background-color": "#ffffff",
+                "color": "#374151",
+                "border": "1px solid #d1d5db",
+                "border-radius": "6px",
+                "padding": "6px 12px",
+                "cursor": "pointer",
+                "margin-bottom": "10px"
+            });
+        }
+    });
+
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+
+        let ph = parseFloat(data[1]) || 0;
+        let turb = parseFloat(data[2]) || 0;
+        let od = parseFloat(data[3]) || 0;
+
+        function checkRange(value, range) {
+            if (!range) return true;
+            let [min, max] = range.split("-").map(Number);
+            return value >= min && value <= max;
+        }
+
+        let phOk = checkRange(ph, $("#phRange").val());
+        let turbOk = checkRange(turb, $("#turbRange").val());
+        let odOk = checkRange(od, $("#odRange").val());
+
+        let fechaFila = data[0];
+        let fechaMin = $("#fechaMin").val();
+        let fechaMax = $("#fechaMax").val();
+
+        if (!fechaMin && !fechaMax) {
+            return phOk && turbOk && odOk;
+        }
+
+        let parts = fechaFila.split("-");
+        let fecha = new Date(parts[2], parts[1] - 1, parts[0]);
+
+        let min = fechaMin ? new Date(fechaMin.split("-")[2], fechaMin.split("-")[1] - 1, fechaMin.split("-")[0]) : null;
+        let max = fechaMax ? new Date(fechaMax.split("-")[2], fechaMax.split("-")[1] - 1, fechaMax.split("-")[0]) : null;
+
+        let fechaOk = true;
+        if (min && fecha < min) fechaOk = false;
+        if (max && fecha > max) fechaOk = false;
+
+        return phOk && turbOk && odOk && fechaOk;
+    });
+
+    $("#phRange, #turbRange, #odRange, #fechaMin, #fechaMax").on("change", function () {
+        tabla.draw();
+    });
+
+});
+
     const chartLabels = {{ chart_labels|safe }};
     const chartData = {{ chart_data|safe }};
     const chartColors = {{ chart_colors|safe }};
@@ -162,7 +368,6 @@
     console.log("📊 Data:", chartData);
     console.log("📊 Plantas:", eficienciaPlantas);
 
-    // === Actualizar tarjeta semáforo ===
     const semaforo = document.querySelector('.bg-white.rounded-lg.shadow.p-4.flex.flex-col.items-center');
     if (semaforo) {
         const colorCircle = semaforo.querySelector('span[style]');
@@ -178,83 +383,120 @@
         if (fechaTexto) fechaTexto.textContent = `Última revisión: ${ultimaRevision}`;
     }
 
-    // === Gráfico 1: Eficiencia global (turbidez) ===
     const phLabels = {{ ph_chart_labels|safe }};
     const phData = {{ ph_chart_data|safe }};
     const turbidezData = {{ turbidez_chart_data|safe }};
 
-    const ctxPhTurbidez = document.getElementById('chartPhTurbidez').getContext('2d');
-    new Chart(ctxPhTurbidez, {
-        type: 'line',
-        data: {
-            labels: phLabels,
-            datasets: [
-                {
-                    label: 'pH',
-                    data: phData,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59,130,246,0.2)',
-                    yAxisID: 'y',
-                    tension: 0.4
-                },
-                {
-                    label: 'Turbidez (NTU)',
-                    data: turbidezData,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245,158,11,0.2)',
-                    yAxisID: 'y1',
-                    tension: 0.4
-                }
-            ]
+const ctxPhTurbidez = document.getElementById('chartPhTurbidez').getContext('2d');
+
+const chartPhTurbidez = new Chart(ctxPhTurbidez, {
+    type: 'line',
+    data: {
+        labels: phLabels,
+        datasets: [
+            {
+                label: 'pH',
+                data: phData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.2)',
+                yAxisID: 'y',
+                tension: 0.4
+            },
+            {
+                label: 'Turbidez (NTU)',
+                data: turbidezData,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245,158,11,0.2)',
+                yAxisID: 'y1',
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+            y: {
+                type: 'linear',
+                position: 'left',
+                title: { display: true, text: 'pH' }
+            },
+            y1: {
+                type: 'linear',
+                position: 'right',
+                title: { display: true, text: 'Turbidez (NTU)' },
+                grid: { drawOnChartArea: false }
+            }
         },
-        options: {
-            responsive: true,
-            interaction: { mode: 'index', intersect: false },
-            scales: {
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    title: { display: true, text: 'pH' }
+
+        // ===========================
+        // 🔥 ZOOM & PAN ACTIVADOS
+        // ===========================
+        plugins: {
+            zoom: {
+                zoom: {
+                    wheel: { enabled: true },     // Scroll para hacer zoom
+                    pinch: { enabled: true },     // Zoom táctil
+                    mode: 'x',                    // Zoom solo eje X
                 },
-                y1: {
-                    type: 'linear',
-                    position: 'right',
-                    title: { display: true, text: 'Turbidez (NTU)' },
-                    grid: { drawOnChartArea: false }
+                pan: {
+                    enabled: true,
+                    mode: 'x',                    // Moverse en eje X
                 }
             }
         }
-    });
+    }
+});
+const ctxOD = document.getElementById('chartOD').getContext('2d');
 
-    // === Gráfico 2: Eficiencia por Biofiltro ===
-    const ctxOD = document.getElementById('chartOD').getContext('2d');
-    const labelsPlantas = eficienciaPlantas.map(p => p.nombre);
-    const valoresPlantas = eficienciaPlantas.map(p => p.valor);
-    const coloresPlantas = eficienciaPlantas.map(p => p.color);
+const labelsPlantas = eficienciaPlantas.map(p => p.nombre);
 
-    new Chart(ctxOD, {
-        type: 'bar',
-        data: {
-            labels: labelsPlantas,
-            datasets: [{
-                label: 'Eficiencia (%)',
-                data: valoresPlantas,
-                backgroundColor: coloresPlantas,
-                borderRadius: 8
-            }]
+const valoresPlantas = eficienciaPlantas.map((p, index) => {
+    if (index === 0) {
+        return parseFloat((100 - p.valor).toFixed(2)); 
+    }
+    const valorAnterior = eficienciaPlantas[index - 1].valor;
+    return parseFloat((valorAnterior - p.valor).toFixed(2));
+});
+let ranking = [...valoresPlantas].sort((a, b) => b - a);
+
+const mejor = ranking[0];
+const segundo = ranking[1];
+const ultimo = ranking[ranking.length - 1];
+const coloresPlantas = valoresPlantas.map(v => {
+    if (v === mejor) return '#22c55e';  
+    if (v === segundo) return '#eab308';  
+    return '#ef4444';                     
+});
+
+new Chart(ctxOD, {
+    type: 'bar',
+    data: {
+        labels: labelsPlantas,
+        datasets: [{
+            label: 'Bajada real de eficiencia (mayor = mejor)',
+            data: valoresPlantas,
+            backgroundColor: coloresPlantas,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    suggestedMax: 100,
-                    title: { display: true, text: 'Eficiencia (%)' }
-                }
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Bajada (valor anterior - valor actual)' }
             }
         }
-    });
+    }
+});
+
+
+
 </script>
+
 </body>
 </html>

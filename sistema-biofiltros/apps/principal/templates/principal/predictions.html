@@ -3,118 +3,319 @@
 <html lang="es">
 {% include 'head.html' %}
 
-<body class="min-h-screen flex flex-col bg-gray-50">
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 overflow-x-hidden">
 
     {% include 'header.html' %}
 
-    <div class="flex flex-1">
+    <div class="flex flex-1 overflow-x-hidden w-full">
 
         {% include 'sidebar.html' %}
 
-    <!-- Contenedor principal -->
-    <div class="flex-1 flex flex-col min-h-screen">
+        <!-- Contenedor principal -->
+        <div class="flex-1 flex flex-col min-h-screen w-full max-w-full">
 
-        <!-- Main Content -->
-        <main class="flex-1 container mx-auto px-6 py-6">
+            <!-- Main Content -->
+            <main class="flex-1 container mx-auto px-4 sm:px-6 py-8 w-full max-w-full">
 
+                <!-- 🔹 Pestañas visuales -->
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8 w-full">
+                    <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded-xl bg-blue-100 hover:bg-blue-200 shadow-sm transition w-full">
+                        <span class="text-xl sm:text-2xl">📊</span>
+                        <span class="text-xs sm:text-sm font-semibold text-blue-800">Resumen</span>
+                    </a>
+                    <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded-xl bg-green-100 hover:bg-green-200 shadow-sm transition w-full">
+                        <span class="text-xl sm:text-2xl">🌡️</span>
+                        <span class="text-xs sm:text-sm font-semibold text-green-800">Sensores</span>
+                    </a>
+                    <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 shadow-sm transition w-full">
+                        <span class="text-xl sm:text-2xl">💧</span>
+                        <span class="text-xs sm:text-sm font-semibold text-yellow-800">Biofiltros</span>
+                    </a>
+                    <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded-xl bg-purple-100 hover:bg-purple-200 shadow-sm transition w-full">
+                        <span class="text-xl sm:text-2xl">🔬</span>
+                        <span class="text-xs sm:text-sm font-semibold text-purple-800">Análisis</span>
+                    </a>
+                    <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded-xl bg-red-100 hover:bg-red-200 shadow-sm transition w-full">
+                        <span class="text-xl sm:text-2xl">📜</span>
+                        <span class="text-xs sm:text-sm font-semibold text-red-800">Historial</span>
+                    </a>
+                    <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded-xl bg-indigo-200 hover:bg-indigo-300 shadow-sm transition w-full">
+                        <span class="text-xl sm:text-2xl">🔮</span>
+                        <span class="text-xs sm:text-sm font-semibold text-indigo-900">Predicciones</span>
+                    </a>
+                </div>
 
-            <!-- Pestañas visuales -->
-<div class="grid grid-cols-6 gap-2 mb-6 p-1">
-                <a href="{% url 'analista_dashboard' %}" class="flex flex-col items-center py-3 px-2 rounded bg-blue-200 hover:bg-blue-300">
-                    <span class="text-2xl">📊</span>
-                    <span class="text-sm font-bold">Resumen</span>
-                </a>
-                <a href="{% url 'sensors' %}" class="flex flex-col items-center py-3 px-2 rounded bg-green-200 hover:bg-green-300">
-                    <span class="text-2xl">🌡️</span>
-                    <span class="text-sm font-bold">Sensores</span>
-                </a>
-                <a href="{% url 'biofilters' %}" class="flex flex-col items-center py-3 px-2 rounded bg-yellow-200 hover:bg-yellow-300">
-                    <span class="text-2xl">💧</span>
-                    <span class="text-sm font-bold">Biofiltros</span>
-                </a>
-                <a href="{% url 'analysis' %}" class="flex flex-col items-center py-3 px-2 rounded bg-purple-200 hover:bg-purple-300">
-                    <span class="text-2xl">🔬</span>
-                    <span class="text-sm font-bold">Análisis</span>
-                </a>
-                <a href="{% url 'history' %}" class="flex flex-col items-center py-3 px-2 rounded bg-red-200 hover:bg-red-300">
-                    <span class="text-2xl">📜</span>
-                    <span class="text-sm font-bold">Historial</span>
-                </a>
-                <a href="{% url 'predictions' %}" class="flex flex-col items-center py-3 px-2 rounded bg-indigo-200 hover:bg-indigo-300">
-                    <span class="text-2xl">🔮</span>
-                    <span class="text-sm font-bold">Predicciones</span>
-                </a>
-            </div>
-
-
-            <!-- Contenido Predicciones -->
-            <div class="space-y-6">
-                <h2 class="text-2xl font-bold flex items-center gap-2">🔮 Predicciones</h2>
-                <p class="text-gray-500 text-sm">Estimación de pH, volumen y OD para los próximos días.</p>
-
-                <!-- Grid de gráficos -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <!-- Gráfico pH futuro -->
-                    <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2">pH estimado próximos 7 días</h3>
-                        <div class="w-full h-64">
-                            <canvas id="phPredictionChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico Volumen futuro -->
-                    <div class="bg-white shadow rounded-lg p-4">
-                        <h3 class="font-semibold mb-2">Volumen estimado próximos 7 días</h3>
-                        <div class="w-full h-64">
-                            <canvas id="volumePredictionChart"></canvas>
-                        </div>
+                <!-- Encabezado -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 w-full">
+                    <div class="text-center sm:text-left">
+                        <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 justify-center sm:justify-start text-indigo-700">
+                            🔮 Predicciones de Cumplimiento del Biofiltro
+                        </h1>
+                        <p class="text-gray-500 text-sm mt-1">
+                            Visualización de probabilidad de cumplimiento para las lecturas recientes.
+                        </p>
                     </div>
                 </div>
-            </div>
 
-        </main>
+                <!-- Gráfico principal -->
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition mb-8 w-full">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        ✅ Probabilidad de Cumplimiento del Modelo
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Cada punto representa una lectura y su probabilidad de cumplir con la norma.
+                    </p>
 
-        <!-- Footer -->
-        <footer class="mt-auto">
-            {% include 'footer.html' %}
-        </footer>
+                    <!-- Contenedor responsive 16:9 -->
+                    <div class="w-full">
+                        <div class="relative" style="width: 100%; padding-bottom: 55%;">
+                            <canvas id="complianceChart" class="absolute top-0 left-0 w-full h-full"></canvas>
+                        </div>
+                    </div>
 
+                </div>
+
+
+                <!-- Tabla paginada -->
+                <div class="bg-white shadow-md rounded-2xl border border-gray-100 overflow-hidden w-full">
+                    <div class="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-b bg-gray-50">
+                        <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                            🧾 Últimas 10 lecturas analizadas
+                        </h3>
+                        <span class="text-sm text-gray-400 mt-1 sm:mt-0">Actualizado {{ now|date:"d/m/Y H:i" }}</span>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 px-6 pt-4">
+
+                        <div>
+                            <label class="font-semibold">pH (min - max)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="phMin" type="number" step="0.1" class="w-full border-gray-300 border rounded px-2 py-1">
+                                <input id="phMax" type="number" step="0.1" class="w-full border-gray-300 border rounded px-2 py-1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">OD (min - max)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="odMin" type="number" step="0.1" class="w-full border-gray-300 border rounded px-2 py-1">
+                                <input id="odMax" type="number" step="0.1" class="w-full border-gray-300 border rounded px-2 py-1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Volumen (min - max)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="volMin" type="number" class="w-full border-gray-300 border rounded px-2 py-1">
+                                <input id="volMax" type="number" class="w-full border-gray-300 border rounded px-2 py-1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Probabilidad (%)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="probMin" type="number" step="0.1" class="w-full border-gray-300 border rounded px-2 py-1">
+                                <input id="probMax" type="number" step="0.1" class="w-full border-gray-300 border rounded px-2 py-1">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="px-4 py-3">
+                        <table id="tablaPredicciones" class="w-full text-xs sm:text-sm">
+                            <thead class="bg-white text-gray-700 uppercase text-xs font-semibold border-b">
+                                <tr>
+                                    <th class="px-4 py-3 text-center">Fecha</th>
+                                    <th class="px-4 py-3 text-center">OD</th>
+                                    <th class="px-4 py-3 text-center">pH</th>
+                                    <th class="px-4 py-3 text-center">Volumen (L)</th>
+                                    <th class="px-4 py-3 text-center">Probabilidad (%)</th>
+                                    <th class="px-4 py-3 text-center">Cumple Norma</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in resultados %}
+                                <tr>
+                                    <td class="px-4 py-3 text-center whitespace-nowrap">{{ r.timestamp }}</td>
+                                    <td class="px-4 py-3 text-center">{{ r.datos.od_entrada }}</td>
+                                    <td class="px-4 py-3 text-center">{{ r.datos.ph_entrada }}</td>
+                                    <td class="px-4 py-3 text-center whitespace-nowrap">{{ r.datos.volumen_agua_entrada }}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        {% if r.prediccion.probabilidad_cumplimiento %}
+                                            {{ r.prediccion.probabilidad_cumplimiento|floatformat:2 }}%
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td class="px-4 py-3 text-center font-semibold">
+                                        {% if r.prediccion.prediccion_cumple_norma %}
+                                            <span class="text-green-600">✅ Sí</span>
+                                        {% else %}
+                                            <span class="text-red-500">❌ No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+
+            <footer class="mt-auto w-full">
+                {% include 'footer.html' %}
+            </footer>
+
+        </div>
     </div>
-</div>
 
-<!-- Scripts gráficos -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const phPredictionCtx = document.getElementById('phPredictionChart').getContext('2d');
-    const phPredictionChart = new Chart(phPredictionCtx, {
-        type: 'line',
-        data: {
-            labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
-            datasets: [{
-                label: 'pH',
-                data: [7.2, 7.1, 7.3, 7.2, 7.1, 7.3, 7.2],
-                borderColor: '#805AD5',
-                backgroundColor: 'rgba(128,90,213,0.2)',
-                tension: 0.3
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{display:false} } }
+    <script>
+        const labels = JSON.parse('{{ labels|safe|escapejs }}');
+        const probVals = JSON.parse('{{ prob_vals|safe|escapejs }}');
+        const cumpleVals = JSON.parse('{{ cumple_vals|safe|escapejs }}');
+
+        new Chart(document.getElementById('complianceChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Probabilidad de Cumplimiento (%)',
+                    data: probVals.map(p => (p * 100).toFixed(2)),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,0.1)',
+                    tension: 0.35,
+                    pointBackgroundColor: cumpleVals.map(c => c ? '#10b981' : '#ef4444'),
+                    pointRadius: 6,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 },
+                    x: { ticks: { maxTicksLimit: 10 } }
+                }
+            }
+        });
+    </script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* ------------------------------------
+       FILTROS POR RANGOS
+    -------------------------------------*/
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+
+        let od = parseFloat(data[1]) || 0;
+        let ph = parseFloat(data[2]) || 0;
+        let vol = parseFloat(data[3]) || 0;
+        let prob = parseFloat(data[4]) || 0;
+
+        const ok = (v, min, max) =>
+            v >= (min || -Infinity) && v <= (max || Infinity);
+
+        return (
+            ok(ph, parseFloat($("#phMin").val()), parseFloat($("#phMax").val())) &&
+            ok(od, parseFloat($("#odMin").val()), parseFloat($("#odMax").val())) &&
+            ok(vol, parseFloat($("#volMin").val()), parseFloat($("#volMax").val())) &&
+            ok(prob, parseFloat($("#probMin").val()), parseFloat($("#probMax").val()))
+        );
     });
 
-    const volumePredictionCtx = document.getElementById('volumePredictionChart').getContext('2d');
-    const volumePredictionChart = new Chart(volumePredictionCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
-            datasets: [{
-                label: 'Volumen (L)',
-                data: [1250, 1270, 1240, 1280, 1265, 1275, 1255],
-                backgroundColor: '#3182CE'
-            }]
+
+    /* ------------------------------------
+       INICIALIZAR DATATABLES 1.13 + BUTTONS 2.4
+    -------------------------------------*/
+    let tabla = $("#tablaPredicciones").DataTable({
+
+        pageLength: 10,
+        responsive: true,
+        ordering: true,
+
+        dom: "<'dt-top'lfB>rt<'dt-bottom'ip>",
+
+        buttons: [
+            {
+                extend: "excelHtml5",
+                text: "📥 Exportar Excel",
+                className: "excelBtn"
+            }
+        ],
+
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
         },
-        options: { responsive:true, plugins:{ legend:{display:false} } }
+
+        createdRow: function (row) {
+            row.style.background = "#ffffff";
+            row.style.color = "#374151";
+            row.style.textAlign = "center";
+        },
+
+        headerCallback: function (thead) {
+            $(thead).find("th").css({
+                background: "#ffffff",
+                color: "#374151",
+                fontWeight: "600",
+                borderBottom: "2px solid #e5e7eb",
+                textAlign: "center"
+            });
+        },
+
+        drawCallback: function () {
+
+            /* --- SELECT MOSTRAR REGISTROS --- */
+            $(".dataTables_length select").css({
+                background: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "6px 10px"
+            });
+
+            /* --- BUSCADOR --- */
+            $(".dataTables_filter input").css({
+                background: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "6px 10px"
+            });
+
+            /* --- PAGINACIÓN --- */
+            $(".dataTables_paginate a").css({
+                background: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "4px 8px",
+                margin: "0 2px"
+            });
+
+            /* --- BOTÓN EXCEL --- */
+            $(".excelBtn").css({
+                background: "#059669",
+                color: "#ffffff",
+                padding: "6px 12px",
+                borderRadius: "6px",
+                border: "none",
+                fontSize: "12px",
+                cursor: "pointer"
+            });
+        }
     });
-</script>
+
+
+    /* ------------------------------------
+       REDIBUJAR SI CAMBIAN FILTROS
+    -------------------------------------*/
+    $("#phMin,#phMax,#odMin,#odMax,#volMin,#volMax,#probMin,#probMax")
+        .on("input", () => tabla.draw());
+
+});
+
+    </script>
 
 </body>
 </html>
