@@ -56,35 +56,47 @@
                         <span class="text-gray-500 text-sm">Estado del Agua</span>
                         <span class="w-6 h-6 rounded-full mt-2" style="background-color: #34D399;"></span>
                         <span class="text-2xl font-bold mt-1 text-green-500">Apta</span>
-                        <span class="text-gray-500 text-xs mt-1">Última revisión: 09-10-2025 10:30</span>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
+                    <div class="relative group bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full cursor-pointer">
+
                         <span class="text-2xl">⚗️</span>
                         <span class="text-gray-500 text-sm">pH Actual</span>
                         <span class="text-2xl font-bold">{{ ph_actual|default:"-" }}</span>
-                        <span class="text-green-500 text-xs mt-1">Dentro de rango</span>
+
+                        <!-- POPUP grande y visible -->
+                        <div class="absolute top-[-140px] left-1/2 -translate-x-1/2 
+                                    w-64 bg-white border border-gray-300 shadow-xl rounded-lg p-4 
+                                    opacity-0 group-hover:opacity-100 pointer-events-none
+                                    transition-all duration-300 z-50">
+
+                            <h4 class="font-bold text-blue-700 text-sm mb-1">¿Qué es el pH del agua?</h4>
+                            <p class="text-gray-700 text-xs">
+                                El pH indica si el agua es ácida, neutra o alcalina.  
+                                Valores entre 6.5 y 8.5 son considerados adecuados.
+                            </p>
+                        </div>
+
                     </div>
 
-                    <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
+
+
+                    <div class="relative group bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full cursor-pointer">
                         <span class="text-2xl">🌡️</span>
                         <span class="text-gray-500 text-sm">Temperatura</span>
                         <span class="text-2xl font-bold">{{ temperatura_actual|floatformat:1 }} °C</span>
-                        <span class="text-green-500 text-xs mt-1">+0.3°C vs promedio</span>
                     </div>
 
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">💦</span>
                         <span class="text-gray-500 text-sm">Volumen Diario</span>
                         <span class="text-2xl font-bold">{{ volumen_diario|floatformat:0 }} Litros</span>
-                        <span class="text-green-500 text-xs mt-1">+5% vs ayer</span>
                     </div>
 
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center w-full">
                         <span class="text-2xl">👥</span>
                         <span class="text-gray-500 text-sm">Ocupantes</span>
                         <span class="text-2xl font-bold">{{ ocupantes_actual|default:"-" }}</span>
-                        <span class="text-gray-500 text-xs mt-1">Sin cambios</span>
                     </div>
                 </div>
 
@@ -92,25 +104,51 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 w-full">
                     <div class="bg-white rounded-lg shadow p-4 w-full">
                         <h3 class="font-bold mb-2">Tendencia pH vs Turbidez</h3>
-                        <div class="w-full h-48 sm:h-56 md:h-64">
+                        <div class="w-full 
+                                    h-48 
+                                    sm:h-64 
+                                    md:h-80 
+                                    lg:h-96 
+                                    xl:h-[500px]">
                             <canvas id="chartPhTurbidez" class="w-full h-full"></canvas>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-lg shadow p-4 w-full">
                         <h3 class="font-bold mb-2">OD / Eficiencia Biofiltros</h3>
-                        <div class="w-full h-48 sm:h-56 md:h-64">
+                        <div class="w-full 
+                                    h-48 
+                                    sm:h-64 
+                                    md:h-80 
+                                    lg:h-96 
+                                    xl:h-[500px]">
                             <canvas id="chartOD" class="w-full h-full"></canvas>
                         </div>
                     </div>
                 </div>
 
+
                 <!-- Historial resumido -->
                 <div class="bg-white rounded-lg shadow p-4 w-full">
                     <h3 class="font-bold mb-4">Historial Diario 📜</h3>
 
-                    <!-- Filtros -->
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4 text-sm">
+                    <!-- 🔄 SWITCH MODO DE FILTRO -->
+                    <div class="flex items-center gap-4 mb-4 text-sm">
+                        <label class="font-semibold text-gray-700">Modo de filtros:</label>
+
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="filterModeHist" value="preset" checked>
+                            <span>Predefinido</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="filterModeHist" value="manual">
+                            <span>Manual (min - max)</span>
+                        </label>
+                    </div>
+
+                    <!-- 🔵 FILTROS PREDEFINIDOS (TU DISEÑO ORIGINAL) -->
+                    <div id="histPresetFilters" class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4 text-sm">
 
                         <!-- pH -->
                         <div>
@@ -155,7 +193,6 @@
                         <div>
                             <label class="font-semibold block">Fecha (rango)</label>
                             <div class="flex gap-2 mt-1">
-
                                 <input type="text" id="fechaMin"
                                     placeholder="Desde (DD-MM-YYYY)"
                                     class="w-full border border-gray-300 rounded px-2 py-1">
@@ -163,14 +200,62 @@
                                 <input type="text" id="fechaMax"
                                     placeholder="Hasta (DD-MM-YYYY)"
                                     class="w-full border border-gray-300 rounded px-2 py-1">
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- 🟢 FILTROS MANUALES (OCULTOS AL INICIO) -->
+                    <div id="histManualFilters" class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4 text-sm hidden">
+
+                        <!-- pH manual -->
+                        <div>
+                            <label class="font-semibold block">pH (min - max)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="phHistMin" type="number" step="0.1"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+                                <input id="phHistMax" type="number" step="0.1"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
                             </div>
                         </div>
 
+                        <!-- Turbidez manual -->
+                        <div>
+                            <label class="font-semibold block">Turbidez (min - max)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="turbHistMin" type="number" step="0.1"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+                                <input id="turbHistMax" type="number" step="0.1"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+                            </div>
+                        </div>
+
+                        <!-- OD manual -->
+                        <div>
+                            <label class="font-semibold block">OD (min - max)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input id="odHistMin" type="number" step="0.1"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+                                <input id="odHistMax" type="number" step="0.1"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+                            </div>
+                        </div>
+
+                            <!-- Fecha manual -->
+                        <div>
+                            <label class="font-semibold block">Fecha (rango)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="date" id="dateHistMin"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+
+                                <input type="date" id="dateHistMax"
+                                    class="w-full border border-gray-300 rounded px-2 py-1">
+                            </div>
+                        </div>
+
+
                     </div>
 
-
-
+                    <!-- TABLA -->
                     <div class="overflow-x-auto w-full">
                         <table id="tablaHistorial" class="min-w-full text-xs sm:text-sm display stripe hover">
                             <thead class="bg-white border-b">
@@ -200,6 +285,7 @@
                         </table>
                     </div>
                 </div>
+
 
 
             </div>
@@ -232,6 +318,24 @@ flatpickr("#fechaMax", {
 });
 $(document).ready(function () {
 
+    let filterModeHist = "preset"; // modo inicial
+
+    // Cambiar modo de filtros
+    $("input[name='filterModeHist']").on("change", function () {
+        filterModeHist = $(this).val();
+
+        if (filterModeHist === "preset") {
+            $("#histPresetFilters").removeClass("hidden");
+            $("#histManualFilters").addClass("hidden");
+        } else {
+            $("#histPresetFilters").addClass("hidden");
+            $("#histManualFilters").removeClass("hidden");
+        }
+
+        tabla.draw();
+    });
+
+    // Inicializar tabla
     var tabla = $("#tablaHistorial").DataTable({
         pageLength: 10,
         responsive: true,
@@ -241,120 +345,142 @@ $(document).ready(function () {
         },
 
         dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '📥 Exportar Excel',
-                title: 'Historial_Diario',
-                className: 'btnExcel'
-            }
-        ],
+        buttons: [{
+            extend: 'excelHtml5',
+            text: '📥 Exportar Excel',
+            title: 'Historial_Diario',
+            className: 'btnExcel'
+        }],
 
-        createdRow: function(row, data, dataIndex){
-            $(row).css({
-                "background-color": "#ffffff",
-                "color": "#374151",
-                "text-align": "center"
-            });
-        },
+        drawCallback: function () {
 
-        headerCallback: function(thead) {
-            $(thead).find("th").css({
-                "background-color": "#ffffff",
-                "color": "#374151",
-                "font-weight": "600",
-                "border-bottom": "2px solid #e5e7eb",
-                "text-align": "center"
-            });
-        },
-
-        drawCallback: function(settings) {
-
+            // Paginación
             $('.dataTables_paginate a').css({
-                "background-color": "#ffffff",
-                "color": "#374151",
-                "border": "1px solid #d1d5db",
-                "border-radius": "6px",
-                "padding": "4px 8px",
-                "margin": "2px"
+                backgroundColor: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "4px 8px",
+                margin: "2px"
             });
 
             $(".paginate_button.current").css({
-                "background-color": "#e5e7eb",
-                "color": "#111827",
-                "border": "1px solid #d1d5db"
+                backgroundColor: "#e5e7eb",
+                color: "#111827",
+                border: "1px solid #d1d5db"
             });
 
+            // Selector "Mostrar X"
             $('.dataTables_length select').css({
-                "background-color": "#ffffff",
-                "color": "#374151",
-                "border": "1px solid #d1d5db",
-                "border-radius": "6px",
-                "padding": "4px 8px"
+                backgroundColor: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "4px 8px"
             });
 
+            // Buscador
             $('.dataTables_filter input').css({
-                "background-color": "#ffffff",
-                "color": "#374151",
-                "border": "1px solid #d1d5db",
-                "border-radius": "6px",
-                "padding": "4px 8px"
+                backgroundColor: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "4px 8px"
             });
 
+            // Botón Excel
             $('.btnExcel').css({
-                "background-color": "#ffffff",
-                "color": "#374151",
-                "border": "1px solid #d1d5db",
-                "border-radius": "6px",
-                "padding": "6px 12px",
-                "cursor": "pointer",
-                "margin-bottom": "10px"
+                backgroundColor: "#ffffff",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: "pointer",
+                marginBottom: "10px"
             });
         }
     });
 
+    // FILTRO UNIFICADO (manual y preset)
     $.fn.dataTable.ext.search.push(function (settings, data) {
 
         let ph = parseFloat(data[1]) || 0;
         let turb = parseFloat(data[2]) || 0;
         let od = parseFloat(data[3]) || 0;
 
-        function checkRange(value, range) {
+        // PRESET RANGE
+        const checkRange = (value, range) => {
             if (!range) return true;
             let [min, max] = range.split("-").map(Number);
             return value >= min && value <= max;
+        };
+
+        // MANUAL RANGE
+        const ok = (v, min, max) =>
+            v >= (min || -Infinity) && v <= (max || Infinity);
+
+        // =============================
+        // MODE PRESET
+        // =============================
+        if (filterModeHist === "preset") {
+
+            let phOk = checkRange(ph, $("#phRange").val());
+            let turbOk = checkRange(turb, $("#turbRange").val());
+            let odOk = checkRange(od, $("#odRange").val());
+
+            // FECHA preset
+            let fechaFila = data[0];
+            let fechaMin = $("#fechaMin").val();
+            let fechaMax = $("#fechaMax").val();
+
+            if (!fechaMin && !fechaMax)
+                return phOk && turbOk && odOk;
+
+            let parts = fechaFila.split("-");
+            let fecha = new Date(parts[2], parts[1] - 1, parts[0]);
+
+            let min = fechaMin ? new Date(fechaMin.split("-")[2], fechaMin.split("-")[1] - 1, fechaMin.split("-")[0]) : null;
+            let max = fechaMax ? new Date(fechaMax.split("-")[2], fechaMax.split("-")[1] - 1, fechaMax.split("-")[0]) : null;
+
+            let fechaOk = true;
+            if (min && fecha < min) fechaOk = false;
+            if (max && fecha > max) fechaOk = false;
+
+            return phOk && turbOk && odOk && fechaOk;
         }
 
-        let phOk = checkRange(ph, $("#phRange").val());
-        let turbOk = checkRange(turb, $("#turbRange").val());
-        let odOk = checkRange(od, $("#odRange").val());
+        // =============================
+        // MODE MANUAL
+        // =============================
+        let fechaFilaM = data[0];
+        let fechaMinM = $("#dateHistMin").val();
+        let fechaMaxM = $("#dateHistMax").val();
 
-        let fechaFila = data[0];
-        let fechaMin = $("#fechaMin").val();
-        let fechaMax = $("#fechaMax").val();
+        let partsM = fechaFilaM.split("-");
+        let fechaM = new Date(partsM[2], partsM[1] - 1, partsM[0]);
 
-        if (!fechaMin && !fechaMax) {
-            return phOk && turbOk && odOk;
-        }
+        let minM = fechaMinM ? new Date(fechaMinM.split("-")[2], fechaMinM.split("-")[1] - 1, fechaMinM.split("-")[0]) : null;
+        let maxM = fechaMaxM ? new Date(fechaMaxM.split("-")[2], fechaMaxM.split("-")[1] - 1, fechaMaxM.split("-")[0]) : null;
 
-        let parts = fechaFila.split("-");
-        let fecha = new Date(parts[2], parts[1] - 1, parts[0]);
+        let fechaOkM = true;
+        if (minM && fechaM < minM) fechaOkM = false;
+        if (maxM && fechaM > maxM) fechaOkM = false;
 
-        let min = fechaMin ? new Date(fechaMin.split("-")[2], fechaMin.split("-")[1] - 1, fechaMin.split("-")[0]) : null;
-        let max = fechaMax ? new Date(fechaMax.split("-")[2], fechaMax.split("-")[1] - 1, fechaMax.split("-")[0]) : null;
-
-        let fechaOk = true;
-        if (min && fecha < min) fechaOk = false;
-        if (max && fecha > max) fechaOk = false;
-
-        return phOk && turbOk && odOk && fechaOk;
+        return (
+            ok(ph, parseFloat($("#phHistMin").val()), parseFloat($("#phHistMax").val())) &&
+            ok(turb, parseFloat($("#turbHistMin").val()), parseFloat($("#turbHistMax").val())) &&
+            ok(od, parseFloat($("#odHistMin").val()), parseFloat($("#odHistMax").val())) &&
+            fechaOkM
+        );
     });
 
-    $("#phRange, #turbRange, #odRange, #fechaMin, #fechaMax").on("change", function () {
-        tabla.draw();
-    });
+    // REDRAW on change
+    $("#phRange, #turbRange, #odRange, #fechaMin, #fechaMax").on("change", () => tabla.draw());
+    $("#phHistMin, #phHistMax, #turbHistMin, #turbHistMax, #odHistMin, #odHistMax, #dateHistMin, #dateHistMax").on("input", () => tabla.draw());
 
 });
+
+
 
     const chartLabels = {{ chart_labels|safe }};
     const chartData = {{ chart_data|safe }};
@@ -429,24 +555,44 @@ const chartPhTurbidez = new Chart(ctxPhTurbidez, {
             }
         },
 
-        // ===========================
-        // 🔥 ZOOM & PAN ACTIVADOS
-        // ===========================
         plugins: {
             zoom: {
+                // =============================
+                // 🔍 ZOOM CON SELECCIÓN (DRAG)
+                // =============================
                 zoom: {
-                    wheel: { enabled: true },     // Scroll para hacer zoom
-                    pinch: { enabled: true },     // Zoom táctil
-                    mode: 'x',                    // Zoom solo eje X
+                    wheel: { enabled: true },
+                    pinch: { enabled: true },
+                    drag: {                     // <--- HABILITA SELECCIÓN CON EL MOUSE
+                        enabled: true,
+                        backgroundColor: 'rgba(0,0,0,0.15)', // Color del área seleccionada
+                        borderColor: 'rgba(0,0,0,0.3)',
+                        borderWidth: 1,
+                    },
+                    mode: 'x'
                 },
+
+                // =============================
+                // ✋ PAN
+                // =============================
                 pan: {
                     enabled: true,
-                    mode: 'x',                    // Moverse en eje X
+                    mode: 'x'
+                },
+
+                // =============================
+                // 🔄 RESET ZOOM (opcional)
+                // =============================
+                limits: {
+                    x: { minRange: 5 } // No permite zoom extremo
                 }
             }
         }
     }
 });
+
+
+
 const ctxOD = document.getElementById('chartOD').getContext('2d');
 
 const labelsPlantas = eficienciaPlantas.map(p => p.nombre);

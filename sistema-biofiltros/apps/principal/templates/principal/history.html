@@ -110,35 +110,80 @@
     </div>
 
 <script>
-       const phHistoryCtx = document.getElementById('phHistoryChart').getContext('2d');
-    new Chart(phHistoryCtx, {
-        type: 'line',
-        data: {
-            labels: {{ ph_history_labels|safe }},
-            datasets: [{
-                label: 'pH',
-                data: {{ ph_history_data|safe }},
-                borderColor: '#E53E3E',
-                backgroundColor: 'rgba(229,62,62,0.2)',
-                tension: 0.3
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{display:false} } }
+function promediarPorDia(labels, valores) {
+    const grupos = {};
+
+    labels.forEach((fecha, i) => {
+        if (!grupos[fecha]) grupos[fecha] = [];
+        grupos[fecha].push(valores[i]);
     });
 
-    const volumeHistoryCtx = document.getElementById('volumeHistoryChart').getContext('2d');
-    new Chart(volumeHistoryCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ ph_history_labels|safe }},
-            datasets: [{
-                label: 'Volumen (L)',
-                data: {{ volume_history_data|safe }},
-                backgroundColor: '#DD6B20'
-            }]
-        },
-        options: { responsive:true, plugins:{ legend:{display:false} } }
-    });
+    const fechas = [];
+    const promedios = [];
+
+    for (const fecha in grupos) {
+        const arr = grupos[fecha];
+        const promedio = arr.reduce((a, b) => a + b, 0) / arr.length;
+        fechas.push(fecha);
+        promedios.push(parseFloat(promedio.toFixed(2)));
+    }
+
+    return { fechas, promedios };
+}
+
+const rawLabels = {{ ph_history_labels|safe }};
+const rawPH = {{ ph_history_data|safe }};
+const rawVOL = {{ volume_history_data|safe }};
+
+const datosPH = promediarPorDia(rawLabels, rawPH);
+const datosVOL = promediarPorDia(rawLabels, rawVOL);
+
+const phHistoryCtx = document.getElementById('phHistoryChart').getContext('2d');
+
+new Chart(phHistoryCtx, {
+    type: 'line',
+    data: {
+        labels: datosPH.fechas,
+        datasets: [{
+            label: 'pH Promedio',
+            data: datosPH.promedios,
+            borderColor: '#E53E3E',
+            backgroundColor: 'rgba(229,62,62,0.2)',
+            tension: 0.3
+        }]
+    },
+    options: { 
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { title: { display: true, text: "Fecha" }},
+            y: { title: { display: true, text: "pH promedio" }}
+        }
+    }
+});
+
+const volumeHistoryCtx = document.getElementById('volumeHistoryChart').getContext('2d');
+
+new Chart(volumeHistoryCtx, {
+    type: 'bar',
+    data: {
+        labels: datosVOL.fechas,
+        datasets: [{
+            label: 'Volumen Promedio (L)',
+            data: datosVOL.promedios,
+            backgroundColor: '#DD6B20'
+        }]
+    },
+    options: { 
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { title: { display: true, text: "Fecha" }},
+            y: { title: { display: true, text: "Volumen promedio (L)" }}
+        }
+    }
+});
 </script>
+
 </body>
 </html>
