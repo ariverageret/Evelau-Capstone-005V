@@ -1,172 +1,19 @@
 [
     {
-        "timestamp": "2025-11-20T15:06:00",
+        "timestamp": "2025-11-24T20:50:00",
         "datos": {
-            "conductividad_entrada": 2011,
-            "numero_usuarios": 5,
-            "od_entrada": 1.1,
-            "ph_entrada": 6.4,
-            "sst": 280,
-            "temperatura_agua": 23.9,
-            "turbidez_entrada": 150,
-            "volumen_agua_entrada": 106
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.9012
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:08:00",
-        "datos": {
-            "conductividad_entrada": 1695,
-            "numero_usuarios": 3,
-            "od_entrada": 1.11,
-            "ph_entrada": 7.1,
-            "sst": 365,
-            "temperatura_agua": 24.3,
-            "turbidez_entrada": 141,
-            "volumen_agua_entrada": 142
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.8725
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:10:00",
-        "datos": {
-            "conductividad_entrada": 1911,
+            "conductividad_entrada": 2178,
             "numero_usuarios": 6,
-            "od_entrada": 2.2,
-            "ph_entrada": 6.9,
-            "sst": 446,
-            "temperatura_agua": 25.9,
-            "turbidez_entrada": 169,
-            "volumen_agua_entrada": 143
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.913
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:12:00",
-        "datos": {
-            "conductividad_entrada": 1768,
-            "numero_usuarios": 3,
-            "od_entrada": 2.43,
-            "ph_entrada": 6.9,
-            "sst": 289,
-            "temperatura_agua": 20.4,
-            "turbidez_entrada": 142,
-            "volumen_agua_entrada": 97
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.9539
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:14:00",
-        "datos": {
-            "conductividad_entrada": 1846,
-            "numero_usuarios": 4,
-            "od_entrada": 1.56,
-            "ph_entrada": 6.6,
-            "sst": 399,
-            "temperatura_agua": 20.7,
-            "turbidez_entrada": 184,
-            "volumen_agua_entrada": 106
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.6659
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:16:00",
-        "datos": {
-            "conductividad_entrada": 1687,
-            "numero_usuarios": 5,
-            "od_entrada": 1.27,
-            "ph_entrada": 6.5,
-            "sst": 292,
-            "temperatura_agua": 20.3,
-            "turbidez_entrada": 149,
-            "volumen_agua_entrada": 134
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.9045
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:18:00",
-        "datos": {
-            "conductividad_entrada": 1850,
-            "numero_usuarios": 2,
-            "od_entrada": 2.01,
-            "ph_entrada": 6.6,
-            "sst": 375,
-            "temperatura_agua": 24.0,
-            "turbidez_entrada": 180,
-            "volumen_agua_entrada": 90
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.802
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:20:00",
-        "datos": {
-            "conductividad_entrada": 1838,
-            "numero_usuarios": 5,
-            "od_entrada": 1.94,
-            "ph_entrada": 7.1,
-            "sst": 295,
-            "temperatura_agua": 23.6,
-            "turbidez_entrada": 193,
-            "volumen_agua_entrada": 103
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.6032
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:22:00",
-        "datos": {
-            "conductividad_entrada": 1753,
-            "numero_usuarios": 4,
-            "od_entrada": 1.78,
-            "ph_entrada": 6.6,
-            "sst": 403,
-            "temperatura_agua": 24.2,
-            "turbidez_entrada": 153,
-            "volumen_agua_entrada": 86
-        },
-        "prediccion": {
-            "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.8149
-        }
-    },
-    {
-        "timestamp": "2025-11-20T15:24:00",
-        "datos": {
-            "conductividad_entrada": 1566,
-            "numero_usuarios": 3,
-            "od_entrada": 1.44,
+            "od_entrada": 2.32,
             "ph_entrada": 6.3,
-            "sst": 407,
-            "temperatura_agua": 21.4,
-            "turbidez_entrada": 168,
-            "volumen_agua_entrada": 146
+            "sst": 424,
+            "temperatura_agua": 23.8,
+            "turbidez_entrada": 202,
+            "volumen_agua_entrada": 120
         },
         "prediccion": {
             "prediccion_cumple_norma": true,
-            "probabilidad_cumplimiento": 0.8983
+            "probabilidad_cumplimiento": 0.7616
         }
     }
 ]

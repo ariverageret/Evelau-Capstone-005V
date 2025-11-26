@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     THINGSPEAK_CHANNEL_ID: str = os.getenv("THINGSPEAK_CHANNEL_ID", "your-channel-id")
 
     # ---------------------- CONFIGURACIÓN DE SCHEDULER ----------------------
-    SCHEDULER_INTERVAL_MINUTES: int = int(os.getenv("SCHEDULER_INTERVAL_MINUTES", 15))
+    SCHEDULER_INTERVAL_MINUTES: int = int(os.getenv("SCHEDULER_INTERVAL_MINUTES", 45))
 
     # ---------------------- UMBRALES NORMATIVOS (NCh 1333) ----------------------
     NORMA_PH_MIN: float = 6.5
