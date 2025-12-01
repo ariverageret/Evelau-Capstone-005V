@@ -179,14 +179,13 @@ def agricultor_view(request):
     def color_por_eficiencia(valor):
         """Devuelve color según eficiencia de planta."""
         if valor >= 85:
-            return "#34f041cc"  # verde
+            return "#34f041cc" 
         elif valor >= 75:
-            return "#f0c419cc"  # amarillo
+            return "#f0c419cc" 
         else:
-            return "#f04334cc"  # rojo
+            return "#f04334cc"  
 
     if isinstance(eficiencia_data, list) and eficiencia_data:
-        # 🔹 Agrupar por día y quedarse con el último registro
         registros_por_dia = OrderedDict()
         for reg in eficiencia_data:
             try:
@@ -267,9 +266,6 @@ def agricultor_view(request):
     return render(request, "principal/agricultor.html", contexto)
 
 def analista_dashboard(request):
-    """
-    Dashboard del analista - versión modificada para usar TODAS las lecturas
-    """
     eficiencia_data = api_principal.get_eficiencia() or []
     lecturas_data = api_principal.get_lecturas() or []
 
@@ -277,26 +273,23 @@ def analista_dashboard(request):
     ph_data, turbidez_data, fechas_mes = [], [], []
     historial_diario = []
 
-    # ============================
-    # 🔹 PROCESAMIENTO DE LECTURAS
-    # ============================
+
     if isinstance(lecturas_data, list) and lecturas_data:
 
-        # 🔹 Lecturas filtradas para el biofiltro 3
         lecturas_salida = [l for l in lecturas_data if l.get("biofiltro_id") == 3]
 
-        # 🔹 Última lectura GLOBAL (por ID)
+        # Última lectura GLOBAL (por ID)
         ultima_lectura = max(lecturas_data, key=lambda x: x.get("id", 0))
 
-        # 🔹 Extraer valores actuales
+        # Extraer valores actuales
         ph_actual = ultima_lectura.get("ph", 0)
         temperatura_actual = ultima_lectura.get("temperatura_agua", 0)
         ocupantes_actual = ultima_lectura.get("numero_usuarios", 0)
 
-        # 🔹 Volumen acumulado total del biofiltro
+        # Volumen acumulado total del biofiltro
         volumen_diario = sum(float(l.get("volumen_agua", 0)) for l in lecturas_salida)
 
-        # 🔹 Datos del último mes para gráficos de pH y turbidez
+        # Datos del último mes para gráficos de pH y turbidez
         hoy = datetime.now().date()
         hace_un_mes = hoy - timedelta(days=30)
 
@@ -312,7 +305,7 @@ def analista_dashboard(request):
             turbidez_data.append(float(l.get("turbidez", 0)))
             fechas_mes.append(fecha)
 
-        # 🔹 Historial completo (todas las lecturas)
+        #Historial completo (todas las lecturas)
         for l in lecturas_data:
             fecha = datetime.fromisoformat(l["timestamp"]).strftime("%d-%m-%Y")
             historial_diario.append({
@@ -323,16 +316,14 @@ def analista_dashboard(request):
                 "ocupantes": l.get("numero_usuarios", 0),
             })
 
-    # ============================
-    # 🔹 PROCESAMIENTO DE EFICIENCIA
-    # ============================
+
     def color_por_eficiencia(valor):
         if valor >= 85:
-            return "#34f041cc"  # verde
+            return "#34f041cc"  
         elif valor >= 75:
-            return "#f0c419cc"  # amarillo
+            return "#f0c419cc"  
         else:
-            return "#f04334cc"  # rojo
+            return "#f04334cc"  
 
     if isinstance(eficiencia_data, list) and eficiencia_data:
 
@@ -413,9 +404,6 @@ def analista_dashboard(request):
         etiquetas = valores = colores = []
         ultima_revision = "-"
 
-    # ============================
-    # 🔹 CONTEXTO FINAL PARA LA VISTA
-    # ============================
     contexto = {
         "eficiencia_data": eficiencia_data,
         "estado_agua": estado_agua,
@@ -527,15 +515,12 @@ def biofilters_view(request):
                 if valor is not None:
                     eficiencia_acumulada[nombre].append(float(valor))
 
-    # === 2️⃣ Calcular promedio semanal ===
     eficiencia_promedio = []
     for nombre in biofiltros:
         valores = eficiencia_acumulada.get(nombre, [])
         promedio = round(sum(valores) / len(valores), 2) if valores else 0
         eficiencia_promedio.append({"nombre": nombre, "promedio": promedio})
 
-    # === 3️⃣ Calcular bajadas reales entre plantas ===
-    # Ejemplo: [92.48, 80.00, 0.00] → bajadas = [7.52, 12.48, 80]
     valores = [p["promedio"] for p in eficiencia_promedio]
     bajadas = []
 
@@ -562,7 +547,6 @@ def biofilters_view(request):
         else:
             bf["color_rank"] = "#ef4444"   # 🟥 peor
 
-    # === 6️⃣ El mejor biofiltro ahora es según bajada real ===
     biofiltro_top = eficiencia_ordenada[0] if eficiencia_ordenada else {
         "nombre": "-",
         "promedio": 0,
@@ -582,7 +566,6 @@ def analysis_view(request):
     lecturas_data = api_principal.get_lecturas() or []
     eficiencia_data = api_principal.get_eficiencia() or []
 
-    # Inicializamos variables
     ph_data, volumen_data, od_data, fechas_semana = [], [], [], []
     pie_labels, pie_values, pie_colors = [], [], []
 
@@ -620,7 +603,6 @@ def analysis_view(request):
             volumen_data.append(0)
             od_data.append(0)
 
-    # === NUEVO PIE CHART: BAJADAS REALES (MEJOR = MAYOR BAJADA) ===
     if isinstance(eficiencia_data, list) and eficiencia_data:
         ultima = max(eficiencia_data, key=lambda x: x.get("id", 0))
 
@@ -754,8 +736,6 @@ def predictions_view(request):
             "volumen_agua_entrada": lectura.get("volumen_agua"),
         }
 
-        # print("\n=== 📤 Enviando datos de predicción ===")
-        # print(datos_envio)
 
         resultado = api_principal.predicciones(datos_envio)
 
@@ -771,7 +751,6 @@ def predictions_view(request):
     with open(archivo_predicciones, "w", encoding="utf-8") as f:
         json.dump(resultados, f, indent=4, ensure_ascii=False)
 
-    # print("\n✅ Predicciones guardadas en:", archivo_predicciones)
 
     # Convertir listas a JSON válido antes de pasarlas al template
     labels = json.dumps([r["timestamp"] for r in resultados])

@@ -15,8 +15,18 @@
     <!-- Contenedor principal -->
     <div class="flex-1 flex flex-col min-h-screen w-full max-w-full">
 
+             <div id="pageLoader" class="fixed inset-0 bg-white z-[9999] flex items-center justify-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-solid"></div>
+            </div>
+
         <!-- Main Content -->
         <main class="flex-1 container mx-auto px-4 sm:px-6 py-6 w-full max-w-full">
+                        <div class="mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Analista Dashboard</h1>
+                <p class="text-gray-600 mt-1">Visualiza los datos en tiempo real de los sensores del sistema de biofiltros.</p>
+            </div>
+
+
 
             <!-- Pestañas visuales con iconos + emojis -->
             <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6 p-1 w-full">
@@ -352,6 +362,15 @@ $(document).ready(function () {
             className: 'btnExcel'
         }],
 
+        initComplete: function () {
+        console.log("✔ DataTables cargó completamente");
+
+        document.getElementById("pageLoader").style.display = "none";
+
+        document.getElementById("pageContent").style.opacity = 1;
+    },
+
+
         drawCallback: function () {
 
             // Paginación
@@ -515,22 +534,47 @@ $(document).ready(function () {
 
 const ctxPhTurbidez = document.getElementById('chartPhTurbidez').getContext('2d');
 
+function promediarPorDia(labels, valores) {
+    const acumulador = {};
+
+    labels.forEach((fecha, i) => {
+        const dia = fecha.split(" ")[0]; 
+        if (!acumulador[dia]) {
+            acumulador[dia] = { suma: 0, count: 0 };
+        }
+
+        acumulador[dia].suma += parseFloat(valores[i]);
+        acumulador[dia].count++;
+    });
+
+    const dias = Object.keys(acumulador);
+    const promedios = dias.map(dia => 
+        (acumulador[dia].suma / acumulador[dia].count).toFixed(2)
+    );
+
+    return { dias, promedios };
+}
+
+const phProm = promediarPorDia(phLabels, phData);
+const turbProm = promediarPorDia(phLabels, turbidezData);
+
+
 const chartPhTurbidez = new Chart(ctxPhTurbidez, {
     type: 'line',
     data: {
-        labels: phLabels,
+        labels: phProm.dias,
         datasets: [
             {
-                label: 'pH',
-                data: phData,
+                label: 'pH Promedio Diario',
+                data: phProm.promedios,
                 borderColor: '#3b82f6',
                 backgroundColor: 'rgba(59,130,246,0.2)',
                 yAxisID: 'y',
                 tension: 0.4
             },
             {
-                label: 'Turbidez (NTU)',
-                data: turbidezData,
+                label: 'Turbidez Promedio Diario (NTU)',
+                data: turbProm.promedios,
                 borderColor: '#f59e0b',
                 backgroundColor: 'rgba(245,158,11,0.2)',
                 yAxisID: 'y1',
@@ -541,6 +585,7 @@ const chartPhTurbidez = new Chart(ctxPhTurbidez, {
     options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
+
         scales: {
             y: {
                 type: 'linear',
@@ -557,34 +602,23 @@ const chartPhTurbidez = new Chart(ctxPhTurbidez, {
 
         plugins: {
             zoom: {
-                // =============================
-                // 🔍 ZOOM CON SELECCIÓN (DRAG)
-                // =============================
                 zoom: {
                     wheel: { enabled: true },
                     pinch: { enabled: true },
-                    drag: {                     // <--- HABILITA SELECCIÓN CON EL MOUSE
+                    drag: {
                         enabled: true,
-                        backgroundColor: 'rgba(0,0,0,0.15)', // Color del área seleccionada
+                        backgroundColor: 'rgba(0,0,0,0.15)',
                         borderColor: 'rgba(0,0,0,0.3)',
                         borderWidth: 1,
                     },
                     mode: 'x'
                 },
-
-                // =============================
-                // ✋ PAN
-                // =============================
                 pan: {
                     enabled: true,
                     mode: 'x'
                 },
-
-                // =============================
-                // 🔄 RESET ZOOM (opcional)
-                // =============================
                 limits: {
-                    x: { minRange: 5 } // No permite zoom extremo
+                    x: { minRange: 5 }
                 }
             }
         }
@@ -639,9 +673,6 @@ new Chart(ctxOD, {
         }
     }
 });
-
-
-
 </script>
 
 </body>

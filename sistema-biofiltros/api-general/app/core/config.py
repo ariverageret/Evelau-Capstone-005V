@@ -13,7 +13,10 @@ class Settings(BaseSettings):
     
     # ---------------------- CONFIGURACIÓN DE LA BASE DE DATOS ----------------------
     #DATABASE_URL: str = "mysql+pymysql://user:password@localhost/biofiltros_db"             # Ejemplo
-    DATABASE_URL: str = "mysql+pymysql://root:bio123@localhost/sistema_biofiltros"
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL",
+        "mysql+pymysql://root:tuclubdelectura123@127.0.0.1:3306/sistema_biofiltros"
+    )
 
     # ---------------------- CONFIGURACIÓN DE LA API ----------------------
     API_V1_STR: str = "/api/v1"

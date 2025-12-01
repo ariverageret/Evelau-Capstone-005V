@@ -1,2 +1,2 @@
 
-API_BASE_URL = "http://127.0.0.1:8001/api/v1" 
+API_BASE_URL = "http://45.236.90.160:8001/api/v1" 
